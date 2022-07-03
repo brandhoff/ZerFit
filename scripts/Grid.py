@@ -44,9 +44,50 @@ class Cell:
         else:
             self.height = height
             
-            
+    
             
     
+    
+    def addFocusCoords(self, focus):
+        """
+        adds Absoluite coordinates of a focus to the cell
+
+        Parameters
+        ----------
+        focus : Tupe(absX, absY)
+            the coordinate tupel of the focus in absolute coordinates.
+
+        Returns
+        -------
+        None.
+
+        """
+        if self.isInside(focus):
+            self.fociAbX = focus[0]
+            self.fociAbY = focus[1]
+            print(self.abToRel(focus))
+        return self.abToRel(focus)
+    def isInside(self, coordsToCheck):
+        """
+        checks is the given pair of coords is inside the cell
+
+        Parameters
+        ----------
+        coordsToCheck : tupel(x,y)
+            the coords to see if inside.
+
+        Returns
+        -------
+        Bool if inside
+
+        """        
+        x = coordsToCheck[0]
+        y = coordsToCheck[1]
+        if x > self.x0+self.width/2 or y > self.y0+self.height/2:
+            return False
+        if x < self.x0-self.width/2 or y < self.y0-self.height/2:
+            return False
+        return True
     
     def drawRect(self, axis, color = 'red'):
         rect = patches.Rectangle((self.x0-self.width/2, self.y0-self.height/2), self.width, self.height, linewidth=1, edgecolor=color, facecolor='none')

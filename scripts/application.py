@@ -22,7 +22,7 @@ from skimage.feature import peak_local_max
 
 import numpy as np
 from skimage.io import imread
-import scipy
+import scipy as sp
 import scipy.ndimage as ndimage
 import scipy.ndimage.filters as filters
 from PyQt5 import QtWidgets
@@ -64,6 +64,8 @@ class Window(QMainWindow, Ui_MainWindow):
         self.ax1 = self.plotSensor.canvas.ax
         self.ax2 = self.plotSensor_2.canvas.ax
         self.grid = []
+        self.nFoci = 25 #default
+        self.relativeShifts = []
     def connectSignalsSlots(self):
         """
         This connects the button Presses etc with the corresponding action functions
@@ -88,6 +90,7 @@ class Window(QMainWindow, Ui_MainWindow):
         print("TEST Image")
 
         img = mpimg.imread('testIMG.jpg')
+        #img = mpimg.imread('singlePoint.jpg')
         image = np.zeros((1000, 1000))
         for i in range(len(img)):
             for j in range(len(img)):
@@ -95,16 +98,18 @@ class Window(QMainWindow, Ui_MainWindow):
         self.ax1.imshow(image, cmap = self.colormap)
         self.draw()
         
-        self.nFoci = 25
         self.guessList = []
         xy = peak_local_max(image,threshold_abs= 0, min_distance=int((len(img))/self.nFoci-10))
-        #image_max = ndimage.maximum_filter(image, size=10, mode='constant')
+        self.nFoci = len(xy)
+
+        
+       #image_max = ndimage.maximum_filter(image, size=10, mode='constant')
         #self.ax2.imshow(image_max, cmap = self.colormap)
 
 
         for t in xy:
-            self.ax1.plot(t[1], t[0], 'o', color='orange')
-            self.guessList.append(t)
+            self.ax1.plot(t[1], t[0], 'o', color='orange', alpha=0.5)
+            self.guessList.append((t[1], t[0]))
             #self.fitLM2DGaussian(image, t[1], t[0], image[t[1],t[0]])
             #self.fit2DGaussian(image, t[1], t[0], image[t[1],t[0]])
         self.draw()
@@ -112,8 +117,11 @@ class Window(QMainWindow, Ui_MainWindow):
         self.drawGrid()
         self.ax1.set_xlim(0, len(image[0,:]))
         self.ax1.set_ylim(0, len(image[:,0]))
-
         self.draw()
+        self.relativeShifts = []
+        for foci in self.guessList:
+            relShift = self.findCellForSpot(foci).addFocusCoords(foci)
+            self.relativeShifts.append(relShift)
 
     def takeImage(self):
         """
@@ -264,13 +272,211 @@ class Window(QMainWindow, Ui_MainWindow):
 
 
     def findCellForSpot(self, SpotCoords):
+        """
+        Finds the cell in which a given pair of coords sits on the grid
+
+        Parameters
+        ----------
+        SpotCoords : TYPE
+            DESCRIPTION.
+
+        Returns
+        -------
+        cell : Cell
+            the cell in which the spot lies.
+
+        """
         if not self.grid[0]:
             print("no grid")
             return
-        xSpot = SpotCoords[0]
-        ySpot = SpotCoords[1]
-        cellWidth = self.grid[0].width
-        cellHeight = self.grid[0].height
+        for cell in self.grid:
+            if cell.isInside(SpotCoords):
+                return cell
+
+
+
+    def toRelImageCoords(self, AbsCoord):
+        midX = self.imageWidth/2
+        midY = self.imageHeight/2
+        xRel = (AbsCoord[0]-midX)/(self.imageWidth/2)
+        yRel = (AbsCoord[1]-midY)/(self.imageHeight/2)
+        return (xRel,yRel)
+
+    def toAbsImageCoords(self, RelCoord):
+        midX = self.imageWidth/2
+        midY = self.imageHeight/2
+        xAbs = RelCoord[0]*self.imageWidth/2+midX
+        yAbs = RelCoord[1]*self.imageHeight/2+midY
+        return (xAbs,yAbs)
+    
+    
+#Zernike Functions
+    def fit_wavefront(self,n_zernike: int = 9,) -> np.ndarray:
+            """
+            Perform a modal (i.a. Zernike polynomial-based) least squares
+            fit to find the wavefront that matches the sensor data. The
+            result is a vector of Zernike coefficients.
+            For more details (also about, for example, the notation), please
+            see [Cubalchini_1979]_. For an alternative discussion of the
+            same topic, see also, for example, section 4.3.2 of [Dai_2007]_.
+            .. note::
+                Note that the code in this package uses a slightly different
+                notation for indexing the Zernike polynomials: when using
+                only a single index :math:`j`, we start counting them at
+                :math:`j = 0` (the constant polynomial which corresponds to
+                :math:`Z^0_0` when using double indices :math:`m` and
+                :math:`n`). [Cubalchini_1979]_, on the other hand, starts
+                counting the Zernike polynomials at 1, which is clearly
+                unpythonic :)
+            .. note::
+                For compatibility reasons, the coefficient vector that is
+                return by the function will also contain a value for the
+                first Zernike polynomial :math:`Z^0_0`, which is always set
+                to be zero. the coefficient vector will, therefore, have
+                `n_zernike + 1` entries.
+            .. warning::
+                Fitting the wavefront requires the Cartesian derivatives of
+                the Zernike polynomials. Computing these "on the fly" is
+                relatively slow, which is why there exists the
+                :py:mod:`hswfs.fast_zernike` module, which contains
+                pre-computed versions of these derivatives up to
+                :math:`j = 135`. If `n_zernike` is chosen to be larger than
+                this value, fitting the wavefront may take a relatively
+                long time. However, for most practical purposes, using this
+                many Zernike polynomials will probably be unnecessary.
+            Args:
+                n_zernike: The number of Zernike polynomials to be used in
+                    the fit. Note that :math:`Z^0_0` (the constant term) is
+                    ignored in the fit.
+                    The index `j_max` of the Zernike polynomial with the
+                    highest order will, therefore, be `n_zernike + 1`.
+            Returns:
+                A numpy array of length `n_zernike + 1`, where the
+                :math:`j`-th entry is the coefficient that corresponds to
+                the Zernike polynomial :math:`Z_j`.
+            """
+    
+            # ---------------------------------------------------------------------
+            # Compute the P vector
+            # ---------------------------------------------------------------------
+    
+            # Shortcut for the total number of apertures in the grid
+            n_ap = self.nFoci
+    
+            # Create p-vector from measured shifts:
+            #   (x_shift_1, x_shift_2, ..., x_shift_N, y_shift_1,  ..., y_shift_n)
+            #p = np.concatenate((self.relative_shifts[:, :, 0].reshape(n_ap),self.relative_shifts[:, :, 1].reshape(n_ap)))
+            p = []
+            for relShift in self.relativeShifts:
+                p.append(relShift[0])
+                
+            for relShift in self.relativeShifts:
+                p.append(relShift[1])
+            # ---------------------------------------------------------------------
+            # Compute the D matrix of derivatives of Zernike polynomials
+            # ---------------------------------------------------------------------
+    
+            # Initialize D.
+            # According to eq. (14) in [Cubalchini_1979], D is a matrix of shape:
+            #   (n_zernike, 2 * n_subapertures),
+            # with entries defined as:
+            #   D_ab = \frac{\partial Z_a}{\partial x} (x, y)_b
+            #   if 0 < b <= n_subapertures,
+            # and
+            #   D_ab = \frac{\partial Z_a}{\partial y} (x, y)_b'
+            #   if n_subapertures < b <= 2 *n_apertures,
+            # where b' = b - n_subapertures, and (x, y)_b denotes the relative
+            # position of the center of the b-th subaperture assuming the entire
+            # sensor grid is placed on the unit disk.
+            d = np.full((n_zernike, 2 * n_ap), np.nan)
+    
+            # Compute evaluation position (x, y), that is, the relative positions
+            # of the centers of the subapertures
+            """
+            x_0 = 1 / np.sqrt(2) * np.linspace((1 / self.grid_size - 1),
+                                               (1 - 1 / self.grid_size),
+                                               self.grid_size).reshape(1, -1)
+            x_0 = np.repeat(x_0, self.grid_size, axis=0)
+            y_0 = 1 / np.sqrt(2) * np.linspace((1 - 1 / self.grid_size),
+                                               (1 / self.grid_size - 1),
+                                               self.grid_size).reshape(-1, 1)
+            y_0 = np.repeat(y_0, self.grid_size, axis=1)
+            """
+            x_0 = []
+            y_0 = []
+            for cell in self.grid:
+                x_0.append(cell.x0)
+                y_0.append(cell.y0)
+
+            # We compute the entries of D row by row, because rows correspond to
+            # Zernike polynomials
+            for row_idx, j in enumerate(range(1, n_zernike+1)):
+    
+                # Map single-index j to double-indices m, n
+                m, n = j_to_mn(j)
+    
+                # Compute derivatives in x- and y-direction. For "small" values of
+                # j, we can use the pre-computed derivatives from the fast_zernike
+                # module. For even higher orders, the derivatives first need to be
+                # computed "on demand", which is a lot slower.
+                if j <= 135:
+                    x_derivatives: np.ndarray = \
+                        zernike_derivative_cartesian(m, n, x_0, y_0, 'x')
+                    y_derivatives: np.ndarray = \
+                        zernike_derivative_cartesian(m, n, x_0, y_0, 'y')
+                else:
+                    zernike_polynomial = ZernikePolynomial(m=m, n=n).cartesian
+                    x_derivatives = \
+                        eval_cartesian(derive(zernike_polynomial, 'x'), x_0, y_0)
+                    y_derivatives = \
+                        eval_cartesian(derive(zernike_polynomial, 'y'), x_0, y_0)
+    
+                # Store derivatives in D matrix
+                d[row_idx] = np.concatenate((x_derivatives.flatten(),
+                                             y_derivatives.flatten()))
+    
+            # ---------------------------------------------------------------------
+            # Find the Zernike coefficients by solving a linear equation system
+            # ---------------------------------------------------------------------
+    
+            # Define the matrix E as per eq. (15) in [Cubalchini_1979]
+            e = d @ d.transpose()
+    
+            # Finally, we can compute the coefficient vector of the wavefront.
+            # According to eq. (16) in [Cubalchini_1979], we have:
+            #   A = E^{-1} D P
+            # Instead of computing the right-hand side directly by inverting E,
+            # which is often ill-conditioned, resulting in major numerical
+            # instabilities and incorrect fits, we transform this to:
+            #   EA = DP,
+            # and use a least squares solver to solve the  equation system for A.
+            a = sp.linalg.lstsq(a=e, b=d @ p)[0]
+    
+            # Add an additional 0 in the first position for for Z^_0
+            a = np.insert(a, 0, 0)
+    
+            return a
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 #Functions for the canvas for clearing etc.
 
