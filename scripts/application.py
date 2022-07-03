@@ -40,7 +40,7 @@ import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
 from lmfit.models import Gaussian2dModel
 from lmfit import Model, Parameters
-
+import Grid
 import lmfit
 from lmfit.lineshapes import gaussian2d, lorentzian
 # Ensure using PyQt5 backend
@@ -63,6 +63,7 @@ class Window(QMainWindow, Ui_MainWindow):
         self.colormap = LinearSegmentedColormap.from_list('testCmap', colors=colorlist, N=1000)
         self.ax1 = self.plotSensor.canvas.ax
         self.ax2 = self.plotSensor_2.canvas.ax
+        self.grid = []
     def connectSignalsSlots(self):
         """
         This connects the button Presses etc with the corresponding action functions
@@ -107,8 +108,13 @@ class Window(QMainWindow, Ui_MainWindow):
             #self.fitLM2DGaussian(image, t[1], t[0], image[t[1],t[0]])
             #self.fit2DGaussian(image, t[1], t[0], image[t[1],t[0]])
         self.draw()
-        self.buildAnalyticGrid(image, 25)
-        
+        self.buildAnalyticGrid(image, self.nFoci)
+        self.drawGrid()
+        self.ax1.set_xlim(0, len(image[0,:]))
+        self.ax1.set_ylim(0, len(image[:,0]))
+
+        self.draw()
+
     def takeImage(self):
         """
         Fired when the take image button is pressed will take an Image of the sensor
@@ -211,17 +217,60 @@ class Window(QMainWindow, Ui_MainWindow):
 #Grid Functions
 
 
+    def drawGrid(self):
+        """
+        Draws the Grid of Cells
+
+        Returns
+        -------
+        None.
+
+        """
+        for cell in self.grid:
+            cell.dotCenter(self.ax1, color = 'red')
+            cell.drawRect(self.ax1)
 
     def buildAnalyticGrid(self, image, numFoci):
-        imageWidth = len(image[:,0])
-        imageHeight = len(image[0,:])
-        print(imageWidth)
-        print(imageHeight)
+        """
+        Builds an equi distant grid containing n cells where n is the 
+        number of foci.
+
+        Parameters
+        ----------
+        image : 2d array
+            the image.
+        numFoci : TYPE
+            the number of foci used to build the grid.
+
+        Returns
+        -------
+        None.
+
+        """
+        self.imageWidth = len(image[:,0])
+        self.imageHeight = len(image[0,:])
+
+        numPer = int(np.sqrt(numFoci))
+        
+        for xi in range(numPer):
+            for yi in range(numPer):
+                width = self.imageWidth/numPer
+                height = self.imageHeight/numPer
+                posX = width/2 + xi*width
+                posY = height/2 + yi*height
+                cell = Grid.Cell((posX,posY),width, height = height)
+                self.grid.append(cell)
 
 
 
-
-
+    def findCellForSpot(self, SpotCoords):
+        if not self.grid[0]:
+            print("no grid")
+            return
+        xSpot = SpotCoords[0]
+        ySpot = SpotCoords[1]
+        cellWidth = self.grid[0].width
+        cellHeight = self.grid[0].height
 
 #Functions for the canvas for clearing etc.
 

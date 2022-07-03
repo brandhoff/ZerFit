@@ -4,6 +4,7 @@ Created on Sun Jul  3 16:32:36 2022
 
 @author: Jonas
 """
+import matplotlib.patches as patches
 class Cell:
     def __init__(self, center, width, height = 0):
         """
@@ -43,6 +44,14 @@ class Cell:
         else:
             self.height = height
             
+            
+            
+    
+    
+    def drawRect(self, axis, color = 'red'):
+        rect = patches.Rectangle((self.x0-self.width/2, self.y0-self.height/2), self.width, self.height, linewidth=1, edgecolor=color, facecolor='none')
+        axis.add_patch(rect)
+    
     def dotCenter(self, axis, color = 'pink'):
         """
         Draws a dot into the axis at the center of the cell
@@ -57,7 +66,7 @@ class Cell:
         None.
 
         """
-        axis.plot(self.x0, self.y0, 'o', color='orange')
+        axis.plot(self.x0, self.y0, 'o', color=color)
         
     def abToRel(self, coords):
         """
