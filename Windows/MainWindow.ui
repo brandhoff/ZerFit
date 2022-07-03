@@ -1,0 +1,289 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>2151</width>
+    <height>1214</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>MainWindow</string>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">background-color: #FFF</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <widget class="QTabWidget" name="tabWidget">
+    <property name="geometry">
+     <rect>
+      <x>0</x>
+      <y>0</y>
+      <width>2141</width>
+      <height>1161</height>
+     </rect>
+    </property>
+    <property name="currentIndex">
+     <number>0</number>
+    </property>
+    <widget class="QWidget" name="tabMain">
+     <attribute name="title">
+      <string>Tab 1</string>
+     </attribute>
+     <widget class="MplWidget" name="plotSensor" native="true">
+      <property name="geometry">
+       <rect>
+        <x>20</x>
+        <y>20</y>
+        <width>1000</width>
+        <height>1000</height>
+       </rect>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="btnTakeImage">
+      <property name="geometry">
+       <rect>
+        <x>20</x>
+        <y>1040</y>
+        <width>221</width>
+        <height>71</height>
+       </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">color: #fff;
+background-color: #337ab7;
+border-color: #2e6da4;
+cursor: pointer;
+background-image: none;
+border: 1px solid transparent;
+border-radius: 4px;</string>
+      </property>
+      <property name="text">
+       <string>Take Image</string>
+      </property>
+     </widget>
+     <widget class="MplWidget" name="plotSensor_2" native="true">
+      <property name="geometry">
+       <rect>
+        <x>1120</x>
+        <y>20</y>
+        <width>1000</width>
+        <height>1000</height>
+       </rect>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="btnShow">
+      <property name="geometry">
+       <rect>
+        <x>1120</x>
+        <y>1040</y>
+        <width>221</width>
+        <height>71</height>
+       </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">color: #fff;
+background-color: #337ab7;
+border-color: #2e6da4;
+cursor: pointer;
+background-image: none;
+border: 1px solid transparent;
+border-radius: 4px;</string>
+      </property>
+      <property name="text">
+       <string>Reconstruct Wavefront</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="btnSavePDF">
+      <property name="geometry">
+       <rect>
+        <x>1530</x>
+        <y>1040</y>
+        <width>221</width>
+        <height>71</height>
+       </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">color: #fff;
+background-color: #337ab7;
+border-color: #2e6da4;
+cursor: pointer;
+background-image: none;
+border: 1px solid transparent;
+border-radius: 4px;</string>
+      </property>
+      <property name="text">
+       <string>Save PDF</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="btnSave_2">
+      <property name="geometry">
+       <rect>
+        <x>1760</x>
+        <y>1040</y>
+        <width>221</width>
+        <height>71</height>
+       </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">color: #fff;
+background-color: #337ab7;
+border-color: #2e6da4;
+cursor: pointer;
+background-image: none;
+border: 1px solid transparent;
+border-radius: 4px;</string>
+      </property>
+      <property name="text">
+       <string>Save TXT</string>
+      </property>
+     </widget>
+    </widget>
+    <widget class="QWidget" name="tabCalibration">
+     <attribute name="title">
+      <string>Tab 2</string>
+     </attribute>
+     <widget class="MplWidget" name="plotSensor_3" native="true">
+      <property name="geometry">
+       <rect>
+        <x>20</x>
+        <y>10</y>
+        <width>1000</width>
+        <height>1000</height>
+       </rect>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="btnImgCali">
+      <property name="geometry">
+       <rect>
+        <x>1030</x>
+        <y>70</y>
+        <width>221</width>
+        <height>71</height>
+       </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">color: #fff;
+background-color: #337ab7;
+border-color: #2e6da4;
+cursor: pointer;
+background-image: none;
+border: 1px solid transparent;
+border-radius: 4px;</string>
+      </property>
+      <property name="text">
+       <string>Take Image</string>
+      </property>
+     </widget>
+     <widget class="QCheckBox" name="checkBox">
+      <property name="geometry">
+       <rect>
+        <x>1040</x>
+        <y>30</y>
+        <width>201</width>
+        <height>23</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Use analytic Calibration</string>
+      </property>
+      <property name="checked">
+       <bool>true</bool>
+      </property>
+     </widget>
+     <widget class="QSpinBox" name="spinNumFoci">
+      <property name="geometry">
+       <rect>
+        <x>1270</x>
+        <y>30</y>
+        <width>111</width>
+        <height>31</height>
+       </rect>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label">
+      <property name="geometry">
+       <rect>
+        <x>1400</x>
+        <y>30</y>
+        <width>151</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Number of Foci</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="btnFindSpotsCali">
+      <property name="geometry">
+       <rect>
+        <x>1030</x>
+        <y>160</y>
+        <width>221</width>
+        <height>71</height>
+       </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">color: #fff;
+background-color: #337ab7;
+border-color: #2e6da4;
+cursor: pointer;
+background-image: none;
+border: 1px solid transparent;
+border-radius: 4px;</string>
+      </property>
+      <property name="text">
+       <string>Find Spots</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="btnBuildGrid">
+      <property name="geometry">
+       <rect>
+        <x>1030</x>
+        <y>250</y>
+        <width>221</width>
+        <height>71</height>
+       </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">color: #fff;
+background-color: #337ab7;
+border-color: #2e6da4;
+cursor: pointer;
+background-image: none;
+border: 1px solid transparent;
+border-radius: 4px;</string>
+      </property>
+      <property name="text">
+       <string>Build Grid</string>
+      </property>
+     </widget>
+    </widget>
+   </widget>
+  </widget>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>2151</width>
+     <height>31</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QStatusBar" name="statusbar"/>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>MplWidget</class>
+   <extends>QWidget</extends>
+   <header>mplwidget.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
+ <resources/>
+ <connections/>
+</ui>
