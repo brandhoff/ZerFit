@@ -18,10 +18,13 @@ from PyQt5.uic import loadUi
 from PyQt5.QtWidgets import QDialog, QFileDialog
 
 from MainWindow import Ui_MainWindow
+from skimage.feature import peak_local_max
 
 import numpy as np
 from skimage.io import imread
-
+import scipy
+import scipy.ndimage as ndimage
+import scipy.ndimage.filters as filters
 from PyQt5 import QtWidgets
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as Canvas
@@ -30,11 +33,16 @@ import matplotlib as mpl
 import matplotlib.colors as colors
 from matplotlib import cm
 from matplotlib.colors import ListedColormap, LinearSegmentedColormap
-
+import scipy.ndimage.filters as filters
 from collections import OrderedDict
 import fitFunctions as FF
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
+from lmfit.models import Gaussian2dModel
+from lmfit import Model, Parameters
+
+import lmfit
+from lmfit.lineshapes import gaussian2d, lorentzian
 # Ensure using PyQt5 backend
 matplotlib.use('QT5Agg')
 
@@ -74,6 +82,8 @@ class Window(QMainWindow, Ui_MainWindow):
         None.
 
         """
+        neighborhood_size = 5
+        threshold = 1500
         print("TEST Image")
 
         img = mpimg.imread('testIMG.jpg')
@@ -84,13 +94,31 @@ class Window(QMainWindow, Ui_MainWindow):
         self.ax1.imshow(image, cmap = self.colormap)
         self.draw()
         
-        
-        self.guessList = []
         self.nFoci = 25
+        self.guessList = []
+        xy = peak_local_max(image, min_distance=int((len(img))/self.nFoci-10))
         
-        for i in range(self.nFoci):
-            self.fit2DGaussian(image, 0, 0)
 
+
+        for t in xy:
+            print(t)
+            self.ax1.plot(t[1], t[0], 'o', color='orange')
+            #self.guessList.append(t)
+            self.fitLM2DGaussian(image, t[1], t[0], image[t[1],t[0]])
+            #self.fit2DGaussian(image, t[1], t[0], image[t[1],t[0]])
+
+        
+        
+        
+        #for i in range(self.nFoci):
+
+        
+        
+        
+        
+        
+        
+        
         
         self.draw()
         
@@ -121,17 +149,74 @@ class Window(QMainWindow, Ui_MainWindow):
 
 
 #Spot fitting fucntions:
-    def fit2DGaussian(self, image, x0, y0):
+    def fit2DGaussian(self, image, x0, y0, ampl):
+        """
+        This functions fits a 2D Gaussian (defined in fitFunctions) to a spot at init guess x0 y0 with ampl
+        as amplitdue nad draws the contour
 
+        Parameters
+        ----------
+        image : ndarray
+            The image.
+        x0 : int
+            init x guess.
+        y0 : TYPE
+            init y guess.
+        ampl : TYPE
+            init ampl guess.
+
+        Returns
+        -------
+        None.
+
+        """
         x = np.linspace(0, len(image[0,:]), len(image[0,:]))
         y = np.linspace(0, len(image[:,0]), len(image[:,0]))
         x, y = np.meshgrid(x, y)
-        initial_guess = (50, x0, y0, 1, 1, 0, 0)
+        initial_guess = (ampl, x0, y0, 1, 1, 0, 0)
         popt, pcov = opt.curve_fit(FF.twoD_Gaussian, (x, y), image.ravel(), p0=initial_guess,maxfev = 200)#5600
         data_fitted = FF.twoD_Gaussian((x, y), *popt)
         self.ax1.contour(x, y, data_fitted.reshape(len(image[0,:]), len(image[:,0])), 8, colors='w')
 
 
+    def fitLM2DGaussian(self, image, x0, y0, ampl, threshHold = 10):
+        """
+        this function utilieses the LMFit libary for a percise fit
+        
+
+        Parameters
+        ----------
+        image : TYPE
+            DESCRIPTION.
+        x0 : TYPE
+            DESCRIPTION.
+        y0 : TYPE
+            DESCRIPTION.
+        ampl : TYPE
+            DESCRIPTION.
+        threshHold : TYPE, optional
+            DESCRIPTION. The default is 10.
+
+        Returns
+        -------
+        None.
+
+        """
+        x = np.linspace(0, len(image[0,:]), len(image[0,:]))
+        y = np.linspace(0, len(image[:,0]), len(image[:,0]))
+        x, y = np.meshgrid(x, y)
+        fit_model = Gaussian2dModel(prefix='peak_')
+        params = Parameters()
+        params.add_many(
+            ('peak_'+'amplitude', ampl, True, 0, 1000),
+            ('peak_'+'centerx', x0, True, x0-threshHold, x0+threshHold),
+            ('peak_'+'centery', y0, True, y0-threshHold, y0+threshHold),
+            ('peak_'+'sigmax', 0.25, True, 0, 1),
+            ('peak_'+'sigmay', 0.25, True, 0, 1)
+
+            )
+        result = fit_model.fit(image, params, x=x, y=y)
+        self.ax1.contour(x, y, result.best_fit, 3, colors='w')
 
 
 

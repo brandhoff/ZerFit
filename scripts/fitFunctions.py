@@ -7,6 +7,8 @@ for Friedrich Schiller Universität
 """
 import numpy as np
 def twoD_Gaussian(xdata_tuple, amplitude, xo, yo, sigma_x, sigma_y, theta, offset):
+        offset = 0
+        theta = 0
         """
         A 2D Gaussian Function for fitting a spot
 
