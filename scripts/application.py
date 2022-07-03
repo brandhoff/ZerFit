@@ -42,10 +42,39 @@ from lmfit.models import Gaussian2dModel
 from lmfit import Model, Parameters
 import Grid
 import lmfit
+from PyQt5.QtWidgets import (QApplication, QFileDialog, QWidget)
+import zernike
+import fast_zernike
 from lmfit.lineshapes import gaussian2d, lorentzian
 # Ensure using PyQt5 backend
 matplotlib.use('QT5Agg')
 
+class DummySaveFileDialogWidget(QWidget):
+
+    def __init__(self, title="Save Graph", filters="Png File (*.png)"):
+        super().__init__()
+        self.title = title
+        self.filters = filters
+        self.fname = self.savefiledialog()
+
+    def savefiledialog(self):
+        filename, _ = QFileDialog.getSaveFileName(caption=self.title,
+                                                  filter=self.filters)
+        return filename
+
+
+class TXTSaveFileDialogWidget(QWidget):
+
+    def __init__(self, title="Save FitResult", filters="Txt File (*.txt)"):
+        super().__init__()
+        self.title = title
+        self.filters = filters
+        self.fname = self.savefiledialog()
+
+    def savefiledialog(self):
+        filename, _ = QFileDialog.getSaveFileName(caption=self.title,
+                                                  filter=self.filters)
+        return filename
 
 
 
@@ -72,7 +101,7 @@ class Window(QMainWindow, Ui_MainWindow):
         """
         self.btnTakeImage.clicked.connect(self.TestImageProcessing)
         self.btnShow.clicked.connect(self.reconstructWavefront)
-
+        self.btnSavePDF.clicked.connect(self.save)
 
 #Action Functions
 
@@ -85,8 +114,7 @@ class Window(QMainWindow, Ui_MainWindow):
         None.
 
         """
-        neighborhood_size = 5
-        threshold = 1500
+
         print("TEST Image")
 
         img = mpimg.imread('testIMG.jpg')
@@ -122,7 +150,19 @@ class Window(QMainWindow, Ui_MainWindow):
         for foci in self.guessList:
             relShift = self.findCellForSpot(foci).addFocusCoords(foci)
             self.relativeShifts.append(relShift)
-
+            
+        coefficients = self.fit_wavefront(15)
+        wavefront = zernike.Wavefront(coefficients=coefficients)     
+        x_0, y_0 = zernike.get_unit_disk_meshgrid(resolution=1000)
+ 
+        print("Hier fehler")
+        wf_grid = zernike.eval_cartesian(wavefront.cartesian, x_0=x_0, y_0=y_0)
+        self.ax2.imshow(wf_grid, cmap=self.colormap)
+        
+        
+        self.ax2.set_xlim(0, len(image[0,:]))
+        self.ax2.set_ylim(0, len(image[:,0]))
+        self.draw()
     def takeImage(self):
         """
         Fired when the take image button is pressed will take an Image of the sensor
@@ -145,7 +185,35 @@ class Window(QMainWindow, Ui_MainWindow):
 
         """
         print("reconstructing Wavefront")
+        img = mpimg.imread('singlePoint.jpg')
+         #img = mpimg.imread('singlePoint.jpg')
+        image = np.zeros((1000, 1000))
+        for i in range(len(img)):
+             for j in range(len(img)):
+                 image[i,j] = np.sum(img[i,j])
+        self.ax1.imshow(image, cmap = self.colormap)
+        self.draw()
+         
+        self.guessList = []
+        xy = peak_local_max(image,threshold_abs= 0, min_distance=int((len(img))/self.nFoci-10))
+        self.nFoci = len(xy)
 
+ 
+        #image_max = ndimage.maximum_filter(image, size=10, mode='constant')
+         #self.ax2.imshow(image_max, cmap = self.colormap)
+        
+        
+        for t in xy:
+             self.ax1.plot(t[1], t[0], 'o', color='orange', alpha=0.5)
+             self.guessList.append((t[1], t[0]))
+             #self.fitLM2DGaussian(image, t[1], t[0], image[t[1],t[0]])
+             #self.fit2DGaussian(image, t[1], t[0], image[t[1],t[0]])
+        self.draw()
+        self.buildAnalyticGrid(image, self.nFoci)
+        self.drawGrid()
+        self.ax1.set_xlim(0, len(image[0,:]))
+        self.ax1.set_ylim(0, len(image[:,0]))
+        self.draw()
 
 
 
@@ -393,27 +461,43 @@ class Window(QMainWindow, Ui_MainWindow):
             # Compute evaluation position (x, y), that is, the relative positions
             # of the centers of the subapertures
             """
-            x_0 = 1 / np.sqrt(2) * np.linspace((1 / self.grid_size - 1),
+            self.grid_size = 5
+            x_L = 1 / np.sqrt(2) * np.linspace((1 / self.grid_size - 1),
                                                (1 - 1 / self.grid_size),
                                                self.grid_size).reshape(1, -1)
-            x_0 = np.repeat(x_0, self.grid_size, axis=0)
-            y_0 = 1 / np.sqrt(2) * np.linspace((1 - 1 / self.grid_size),
+            x_L = np.repeat(x_L, self.grid_size, axis=0)
+            y_L = 1 / np.sqrt(2) * np.linspace((1 - 1 / self.grid_size),
                                                (1 / self.grid_size - 1),
                                                self.grid_size).reshape(-1, 1)
-            y_0 = np.repeat(y_0, self.grid_size, axis=1)
+            y_L = np.repeat(y_L, self.grid_size, axis=1)
+            print(x_L)
+            print(y_L)
             """
             x_0 = []
             y_0 = []
-            for cell in self.grid:
-                x_0.append(cell.x0)
-                y_0.append(cell.y0)
 
+            for cell in self.grid:
+                if self.toRelImageCoords(cell.center)[0] == 0:
+                    x_0.append(0.000001)
+                else:
+                    x_0.append(self.toRelImageCoords(cell.center)[0])
+                    
+                if self.toRelImageCoords(cell.center)[1] == 0:
+                    y_0.append(0.000001)
+                else:
+                    y_0.append(self.toRelImageCoords(cell.center)[1])
+           # print("meine")
+            x_0 = np.array(x_0)
+            y_0 = np.array(y_0)
+
+           # print(x_0.reshape(5,5))
+           # print(y_0.reshape(5,5))
             # We compute the entries of D row by row, because rows correspond to
             # Zernike polynomials
             for row_idx, j in enumerate(range(1, n_zernike+1)):
     
                 # Map single-index j to double-indices m, n
-                m, n = j_to_mn(j)
+                m, n = zernike.j_to_mn(j)
     
                 # Compute derivatives in x- and y-direction. For "small" values of
                 # j, we can use the pre-computed derivatives from the fast_zernike
@@ -421,15 +505,15 @@ class Window(QMainWindow, Ui_MainWindow):
                 # computed "on demand", which is a lot slower.
                 if j <= 135:
                     x_derivatives: np.ndarray = \
-                        zernike_derivative_cartesian(m, n, x_0, y_0, 'x')
+                        fast_zernike.zernike_derivative_cartesian(m, n, x_0, y_0, 'x')
                     y_derivatives: np.ndarray = \
-                        zernike_derivative_cartesian(m, n, x_0, y_0, 'y')
+                        fast_zernike.zernike_derivative_cartesian(m, n, x_0, y_0, 'y')
                 else:
-                    zernike_polynomial = ZernikePolynomial(m=m, n=n).cartesian
+                    zernike_polynomial = zernike.ZernikePolynomial(m=m, n=n).cartesian
                     x_derivatives = \
-                        eval_cartesian(derive(zernike_polynomial, 'x'), x_0, y_0)
+                       zernike.eval_cartesian(zernike.derive(zernike_polynomial, 'x'), x_0, y_0)
                     y_derivatives = \
-                        eval_cartesian(derive(zernike_polynomial, 'y'), x_0, y_0)
+                        zernike.eval_cartesian(zernike.derive(zernike_polynomial, 'y'), x_0, y_0)
     
                 # Store derivatives in D matrix
                 d[row_idx] = np.concatenate((x_derivatives.flatten(),
@@ -452,9 +536,11 @@ class Window(QMainWindow, Ui_MainWindow):
             # and use a least squares solver to solve the  equation system for A.
             a = sp.linalg.lstsq(a=e, b=d @ p)[0]
     
+
             # Add an additional 0 in the first position for for Z^_0
             a = np.insert(a, 0, 0)
-    
+            print("calculated coeff Vector:")
+            print(a)
             return a
 
 
@@ -493,8 +579,12 @@ class Window(QMainWindow, Ui_MainWindow):
 
 
     def save(self):
-        self.plotSensor.canvas.fig.savefig("Figure.pdf");
-
+        
+        app = QApplication(['./'])
+        form = DummySaveFileDialogWidget()
+        if form.fname:
+            self.plotSensor.canvas.fig.savefig(form.fname,bbox_inches="tight");
+            #plt.savefig(form.fname,bbox_inches="tight")
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
