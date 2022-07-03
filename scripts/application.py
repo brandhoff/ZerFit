@@ -62,7 +62,7 @@ class Window(QMainWindow, Ui_MainWindow):
         colorlist=["#001f78","#3d66d9","#53b4c9","#2adea2","#8ccf55", "#eded1f", "#c49110", "#d41f0f"]
         self.colormap = LinearSegmentedColormap.from_list('testCmap', colors=colorlist, N=1000)
         self.ax1 = self.plotSensor.canvas.ax
-
+        self.ax2 = self.plotSensor_2.canvas.ax
     def connectSignalsSlots(self):
         """
         This connects the button Presses etc with the corresponding action functions
@@ -90,37 +90,24 @@ class Window(QMainWindow, Ui_MainWindow):
         image = np.zeros((1000, 1000))
         for i in range(len(img)):
             for j in range(len(img)):
-                image[i,j] = np.mean(img[i,j])
+                image[i,j] = np.sum(img[i,j])
         self.ax1.imshow(image, cmap = self.colormap)
         self.draw()
         
         self.nFoci = 25
         self.guessList = []
-        xy = peak_local_max(image, min_distance=int((len(img))/self.nFoci-10))
-        
+        xy = peak_local_max(image,threshold_abs= 0, min_distance=int((len(img))/self.nFoci-10))
+        #image_max = ndimage.maximum_filter(image, size=10, mode='constant')
+        #self.ax2.imshow(image_max, cmap = self.colormap)
 
 
         for t in xy:
-            print(t)
             self.ax1.plot(t[1], t[0], 'o', color='orange')
-            #self.guessList.append(t)
-            self.fitLM2DGaussian(image, t[1], t[0], image[t[1],t[0]])
+            self.guessList.append(t)
+            #self.fitLM2DGaussian(image, t[1], t[0], image[t[1],t[0]])
             #self.fit2DGaussian(image, t[1], t[0], image[t[1],t[0]])
-
-        
-        
-        
-        #for i in range(self.nFoci):
-
-        
-        
-        
-        
-        
-        
-        
-        
         self.draw()
+        self.buildAnalyticGrid(image, 25)
         
     def takeImage(self):
         """
@@ -221,8 +208,15 @@ class Window(QMainWindow, Ui_MainWindow):
 
 
 
+#Grid Functions
 
 
+
+    def buildAnalyticGrid(self, image, numFoci):
+        imageWidth = len(image[:,0])
+        imageHeight = len(image[0,:])
+        print(imageWidth)
+        print(imageHeight)
 
 
 
@@ -234,7 +228,7 @@ class Window(QMainWindow, Ui_MainWindow):
 
     def draw(self):
         self.plotSensor.canvas.draw()
-
+        self.plotSensor_2.canvas.draw()
     def plotClear(self):
         self.plotSensor.canvas.ax.cla()
         self.plotSensor.canvas.draw()
