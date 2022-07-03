@@ -117,7 +117,7 @@ class Window(QMainWindow, Ui_MainWindow):
 
         print("TEST Image")
 
-        img = mpimg.imread('testIMG.jpg')
+        img = mpimg.imread('may.jpg')
         #img = mpimg.imread('singlePoint.jpg')
         image = np.zeros((1000, 1000))
         for i in range(len(img)):
@@ -127,8 +127,8 @@ class Window(QMainWindow, Ui_MainWindow):
         self.draw()
         
         self.guessList = []
-        xy = peak_local_max(image,threshold_abs= 0, min_distance=int((len(img))/self.nFoci-10))
-        self.nFoci = len(xy)
+        xy = peak_local_max(image, min_distance=7)#int((len(img))/self.nFoci-10))
+        self.nFoci = 64#len(xy)
 
         
        #image_max = ndimage.maximum_filter(image, size=10, mode='constant')
@@ -151,14 +151,15 @@ class Window(QMainWindow, Ui_MainWindow):
             relShift = self.findCellForSpot(foci).addFocusCoords(foci)
             self.relativeShifts.append(relShift)
             
-        coefficients = self.fit_wavefront(15)
+        coefficients = self.fit_wavefront(5)
         wavefront = zernike.Wavefront(coefficients=coefficients)     
         x_0, y_0 = zernike.get_unit_disk_meshgrid(resolution=1000)
- 
-        print("Hier fehler")
         wf_grid = zernike.eval_cartesian(wavefront.cartesian, x_0=x_0, y_0=y_0)
-        self.ax2.imshow(wf_grid, cmap=self.colormap)
-        
+        #wf_grid[np.isnan(wf_grid)] = -1 
+        #self.ax2.imshow(wf_grid,cmap=self.colormap, vmin = 0,vmax = 0.2)
+        limit = 1.1 * np.nanmax(np.abs(wf_grid))
+        self.ax2.imshow(wf_grid, interpolation='nearest', cmap=self.colormap,
+                        vmin=-limit, vmax=limit)
         
         self.ax2.set_xlim(0, len(image[0,:]))
         self.ax2.set_ylim(0, len(image[:,0]))
@@ -185,35 +186,7 @@ class Window(QMainWindow, Ui_MainWindow):
 
         """
         print("reconstructing Wavefront")
-        img = mpimg.imread('singlePoint.jpg')
-         #img = mpimg.imread('singlePoint.jpg')
-        image = np.zeros((1000, 1000))
-        for i in range(len(img)):
-             for j in range(len(img)):
-                 image[i,j] = np.sum(img[i,j])
-        self.ax1.imshow(image, cmap = self.colormap)
-        self.draw()
-         
-        self.guessList = []
-        xy = peak_local_max(image,threshold_abs= 0, min_distance=int((len(img))/self.nFoci-10))
-        self.nFoci = len(xy)
-
- 
-        #image_max = ndimage.maximum_filter(image, size=10, mode='constant')
-         #self.ax2.imshow(image_max, cmap = self.colormap)
         
-        
-        for t in xy:
-             self.ax1.plot(t[1], t[0], 'o', color='orange', alpha=0.5)
-             self.guessList.append((t[1], t[0]))
-             #self.fitLM2DGaussian(image, t[1], t[0], image[t[1],t[0]])
-             #self.fit2DGaussian(image, t[1], t[0], image[t[1],t[0]])
-        self.draw()
-        self.buildAnalyticGrid(image, self.nFoci)
-        self.drawGrid()
-        self.ax1.set_xlim(0, len(image[0,:]))
-        self.ax1.set_ylim(0, len(image[:,0]))
-        self.draw()
 
 
 
@@ -460,18 +433,30 @@ class Window(QMainWindow, Ui_MainWindow):
     
             # Compute evaluation position (x, y), that is, the relative positions
             # of the centers of the subapertures
-            """
-            self.grid_size = 5
-            x_L = 1 / np.sqrt(2) * np.linspace((1 / self.grid_size - 1),
+            
+            self.grid_size = 8
+            x_0 =  np.linspace((1 / self.grid_size - 1),
                                                (1 - 1 / self.grid_size),
                                                self.grid_size).reshape(1, -1)
-            x_L = np.repeat(x_L, self.grid_size, axis=0)
-            y_L = 1 / np.sqrt(2) * np.linspace((1 - 1 / self.grid_size),
+            x_0 = np.repeat(x_0, self.grid_size, axis=0)
+            y_0 =  np.linspace((1 - 1 / self.grid_size),
                                                (1 / self.grid_size - 1),
                                                self.grid_size).reshape(-1, 1)
-            y_L = np.repeat(y_L, self.grid_size, axis=1)
-            print(x_L)
-            print(y_L)
+            y_0 = np.repeat(y_0, self.grid_size, axis=1)
+            midX = self.imageWidth/2
+            midY = self.imageHeight/2
+            lX = []
+            lY = []
+            
+            for xi, conti in enumerate(x_0):
+                for xj, conti in enumerate(x_0[xi]):
+                    xAbs = x_0[xi,xj]*self.imageWidth/2+midX
+                    yAbs = y_0[xi,xj]*self.imageHeight/2+midY
+                    lX.append(xAbs)
+                    lY.append(yAbs)
+
+            #self.ax1.plot(lX, lY, 'o', color='black')
+            
             """
             x_0 = []
             y_0 = []
@@ -489,7 +474,7 @@ class Window(QMainWindow, Ui_MainWindow):
            # print("meine")
             x_0 = np.array(x_0)
             y_0 = np.array(y_0)
-
+            """
            # print(x_0.reshape(5,5))
            # print(y_0.reshape(5,5))
             # We compute the entries of D row by row, because rows correspond to
