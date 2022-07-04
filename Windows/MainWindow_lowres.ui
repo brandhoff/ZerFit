@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1180</width>
-    <height>722</height>
+    <width>1158</width>
+    <height>736</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -22,7 +22,7 @@
      <rect>
       <x>0</x>
       <y>0</y>
-      <width>1171</width>
+      <width>1131</width>
       <height>681</height>
      </rect>
     </property>
@@ -31,7 +31,7 @@
     </property>
     <widget class="QWidget" name="tabMain">
      <attribute name="title">
-      <string>Tab 1</string>
+      <string>Main</string>
      </attribute>
      <widget class="MplWidget" name="plotSensor" native="true">
       <property name="geometry">
@@ -186,10 +186,32 @@ border-radius: 4px;</string>
        <enum>Qt::Horizontal</enum>
       </property>
      </widget>
+     <widget class="QPushButton" name="btnCreateGrid">
+      <property name="geometry">
+       <rect>
+        <x>210</x>
+        <y>550</y>
+        <width>171</width>
+        <height>61</height>
+       </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">color: #fff;
+background-color: #337ab7;
+border-color: #2e6da4;
+cursor: pointer;
+background-image: none;
+border: 1px solid transparent;
+border-radius: 4px;</string>
+      </property>
+      <property name="text">
+       <string>Create Grid</string>
+      </property>
+     </widget>
     </widget>
     <widget class="QWidget" name="tabCalibration">
      <attribute name="title">
-      <string>Tab 2</string>
+      <string>Analyse</string>
      </attribute>
      <widget class="MplWidget" name="plotSensor_3" native="true">
       <property name="geometry">
@@ -314,8 +336,8 @@ border-radius: 4px;</string>
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1180</width>
-     <height>24</height>
+     <width>1158</width>
+     <height>31</height>
     </rect>
    </property>
   </widget>

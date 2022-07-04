@@ -2,23 +2,21 @@
 
 # Form implementation generated from reading ui file 'MainWindow_lowres.ui'
 #
-# Created by: PyQt5 UI code generator 5.12.3
+# Created by: PyQt5 UI code generator 5.9.2
 #
 # WARNING! All changes made in this file will be lost!
 
-
 from PyQt5 import QtCore, QtGui, QtWidgets
-
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(1180, 722)
+        MainWindow.resize(1158, 736)
         MainWindow.setStyleSheet("background-color: #FFF")
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
         self.tabWidget = QtWidgets.QTabWidget(self.centralwidget)
-        self.tabWidget.setGeometry(QtCore.QRect(0, 0, 1171, 681))
+        self.tabWidget.setGeometry(QtCore.QRect(0, 0, 1131, 681))
         self.tabWidget.setObjectName("tabWidget")
         self.tabMain = QtWidgets.QWidget()
         self.tabMain.setObjectName("tabMain")
@@ -81,6 +79,16 @@ class Ui_MainWindow(object):
         self.horizontalSlider.setProperty("value", 200)
         self.horizontalSlider.setOrientation(QtCore.Qt.Horizontal)
         self.horizontalSlider.setObjectName("horizontalSlider")
+        self.btnCreateGrid = QtWidgets.QPushButton(self.tabMain)
+        self.btnCreateGrid.setGeometry(QtCore.QRect(210, 550, 171, 61))
+        self.btnCreateGrid.setStyleSheet("color: #fff;\n"
+"background-color: #337ab7;\n"
+"border-color: #2e6da4;\n"
+"cursor: pointer;\n"
+"background-image: none;\n"
+"border: 1px solid transparent;\n"
+"border-radius: 4px;")
+        self.btnCreateGrid.setObjectName("btnCreateGrid")
         self.tabWidget.addTab(self.tabMain, "")
         self.tabCalibration = QtWidgets.QWidget()
         self.tabCalibration.setObjectName("tabCalibration")
@@ -130,7 +138,7 @@ class Ui_MainWindow(object):
         self.tabWidget.addTab(self.tabCalibration, "")
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 1180, 24))
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 1158, 31))
         self.menubar.setObjectName("menubar")
         MainWindow.setMenuBar(self.menubar)
         self.statusbar = QtWidgets.QStatusBar(MainWindow)
@@ -149,11 +157,13 @@ class Ui_MainWindow(object):
         self.btnSavePDF.setText(_translate("MainWindow", "Save PDF"))
         self.btnSave_2.setText(_translate("MainWindow", "Save TXT"))
         self.label_2.setText(_translate("MainWindow", "Order"))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tabMain), _translate("MainWindow", "Tab 1"))
+        self.btnCreateGrid.setText(_translate("MainWindow", "Create Grid"))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tabMain), _translate("MainWindow", "Main"))
         self.btnImgCali.setText(_translate("MainWindow", "Take Image"))
         self.checkBox.setText(_translate("MainWindow", "Use analytic Calibration"))
         self.label.setText(_translate("MainWindow", "Number of Foci"))
         self.btnFindSpotsCali.setText(_translate("MainWindow", "Find Spots"))
         self.btnBuildGrid.setText(_translate("MainWindow", "Build Grid"))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tabCalibration), _translate("MainWindow", "Tab 2"))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tabCalibration), _translate("MainWindow", "Analyse"))
+
 from mplwidget import MplWidget

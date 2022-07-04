@@ -88,7 +88,6 @@ class Window(QMainWindow, Ui_MainWindow):
         super().__init__(parent)
         self.setupUi(self)
         self.connectSignalsSlots()
-        print(zernike.ZernikePolynomial(j=15).radial_part)
 
         colorlist=["#001f78","#3d66d9","#53b4c9","#2adea2","#8ccf55", "#eded1f", "#c49110", "#d41f0f"]
         self.colormap = LinearSegmentedColormap.from_list('testCmap', colors=colorlist, N=1000)
@@ -97,6 +96,11 @@ class Window(QMainWindow, Ui_MainWindow):
         self.grid = []
         self.nFoci = 64 #default
         self.relativeShifts = []
+        self.guessList = []
+        self.relativeShifts = []
+
+        
+        
     def connectSignalsSlots(self):
         """
         This connects the button Presses etc with the corresponding action functions
@@ -105,6 +109,10 @@ class Window(QMainWindow, Ui_MainWindow):
         self.btnShow.clicked.connect(self.reconstructWavefront)
         self.btnSavePDF.clicked.connect(self.save)
         self.horizontalSlider.valueChanged.connect(self.updateWav)
+        self.btnCreateGrid.clicked.connect(self.buildGrid)
+        
+        self.btnSave_2.clicked.connect(self.createGallery)
+        
 #Action Functions
 
     def TestImageProcessing(self):
@@ -122,7 +130,7 @@ class Window(QMainWindow, Ui_MainWindow):
         self.plotSensor_2.canvas.ax.cla()
         print("TEST Image")
 
-        img = mpimg.imread('last.jpg')
+        img = mpimg.imread('left.jpg')
         #img = mpimg.imread('singlePoint.jpg')
         image = np.zeros((1000, 1000))
         for i in range(len(img)):
@@ -131,7 +139,7 @@ class Window(QMainWindow, Ui_MainWindow):
         self.ax1.imshow(image, cmap = self.colormap)
         self.draw()
         
-        self.guessList = []
+
         xy = peak_local_max(image, min_distance=7)#int((len(img))/self.nFoci-10))
         self.nFoci = 64#len(xy)
 
@@ -144,45 +152,14 @@ class Window(QMainWindow, Ui_MainWindow):
         for t in xy:
             self.ax1.plot(t[1], t[0], 'o', color='orange', alpha=0.5)
             self.guessList.append((t[1], t[0]))
-            #self.fitLM2DGaussian(image, t[1], t[0], image[t[1],t[0]])
-            #self.fit2DGaussian(image, t[1], t[0], image[t[1],t[0]])
         self.draw()
-        self.buildAnalyticGrid(image, self.nFoci)
-        self.drawGrid()
+        
         self.ax1.set_xlim(0, len(image[0,:]))
         self.ax1.set_ylim(0, len(image[:,0]))
         self.draw()
-        self.relativeShifts = []
-        for foci in self.guessList:
-            relShift = self.findCellForSpot(foci).addFocusCoords(foci)
-            self.relativeShifts.append(relShift)
-        order = self.spinBox.value()
-        coefficients = self.fit_wavefront(n_zernike=order)
-        """
-        coefficients = [0, 0.12, 0.214, 0.02, 0.1234, 0.3, 0.23, 0.423, 0.23, 0.23 ,0.234 ,0.4, 0.0234, 0.234, 0.234, 0.234]
-        polynom = 0
-        for i, coeff in enumerate(coefficients):
-            polynom = polynom + coeff * zernike.ZernikePolynomial(j=i).polar
-        """
-        print("Polynom")
-
-        wavefront = zernike.Wavefront(coefficients=coefficients)     
-        x_0, y_0 = zernike.get_unit_disk_meshgrid(resolution=1000)
-        wf_grid = zernike.eval_cartesian(wavefront.cartesian, x_0=x_0, y_0=y_0)
-        print("grid:")
-        print(wf_grid)
-
-        self.calculatedWavGrid = wf_grid
-        #
-        #self.ax2.imshow(wf_grid,cmap=self.colormap, vmin = 0,vmax = 0.2)
-        maximum = self.horizontalSlider.value() / 1000
-        wf_grid[np.isnan(wf_grid)] = -1 
-        self.ax2.imshow(wf_grid, interpolation='nearest', cmap=self.colormap,
-                        vmin=-maximum, vmax=maximum)
         
-        self.ax2.set_xlim(0, len(image[0,:]))
-        self.ax2.set_ylim(0, len(image[:,0]))
-        self.draw()
+        
+        
     def takeImage(self):
         """
         Fired when the take image button is pressed will take an Image of the sensor
@@ -205,7 +182,30 @@ class Window(QMainWindow, Ui_MainWindow):
 
         """
         print("reconstructing Wavefront")
+        order = self.spinBox.value()
         
+        """
+        coefficients = self.fit_wavefront(n_zernike=order)
+
+
+        wavefront = zernike.Wavefront(coefficients=coefficients)     
+        x_0, y_0 = zernike.get_unit_disk_meshgrid(resolution=1000)
+        wf_grid = zernike.eval_cartesian(wavefront.cartesian, x_0=x_0, y_0=y_0)
+        """
+        
+        x_0, y_0 = zernike.get_unit_disk_meshgrid(resolution=1000)
+        wf_grid = zernike.eval_cartesian(zernike.ZernikePolynomial(j=order).cartesian, x_0=x_0, y_0=y_0)
+        self.calculatedWavGrid = wf_grid
+        #
+        #self.ax2.imshow(wf_grid,cmap=self.colormap, vmin = 0,vmax = 0.2)
+        maximum = self.horizontalSlider.value() / 1000
+        wf_grid[np.isnan(wf_grid)] = -1 
+        self.ax2.imshow(wf_grid, interpolation='nearest', cmap=self.colormap,
+                        vmin=-maximum, vmax=maximum)
+        
+        self.ax2.set_xlim(0, self.imageWidth)
+        self.ax2.set_ylim(0, self.imageHeight)
+        self.draw()
 
     def updateWav(self):
         if self.calculatedWavGrid is None:
@@ -219,6 +219,41 @@ class Window(QMainWindow, Ui_MainWindow):
             self.ax2.set_xlim(0, self.imageWidth)
             self.ax2.set_ylim(0, self.imageHeight)
             self.plotSensor_2.canvas.draw()
+
+
+
+
+
+
+    def buildGrid(self):
+        """
+        
+
+        Returns
+        -------
+        None.
+
+        """
+        self.buildAnalyticGrid(self.image, self.nFoci)
+        self.drawGrid()
+        self.calculateRelativeShifts()
+        self.draw()
+
+    def createGallery(self):
+        x_0, y_0 = zernike.get_unit_disk_meshgrid(resolution=1000)
+        
+        for j in range(50):
+            self.plotSensor_2.canvas.ax.cla()
+            wf_grid = zernike.eval_cartesian(zernike.ZernikePolynomial(j=j).cartesian, x_0=x_0, y_0=y_0)
+            maximum = np.nanmax(np.abs(wf_grid))
+            self.ax2.imshow(wf_grid, interpolation='nearest', cmap=self.colormap,
+                            vmin=-maximum, vmax=maximum)
+            
+            
+            plt.axis('off')
+            self.draw()
+            self.plotSensor_2.canvas.fig.savefig('Zernike'+str(j)+'.png',bbox_inches="tight");
+
 
 #Spot fitting fucntions:
     def fit2DGaussian(self, image, x0, y0, ampl):
@@ -294,6 +329,14 @@ class Window(QMainWindow, Ui_MainWindow):
 
 
 #Grid Functions
+
+
+
+    def calculateRelativeShifts(self):
+        self.relativeShifts = []
+        for foci in self.guessList:
+            relShift = self.findCellForSpot(foci).addFocusCoords(foci)
+            self.relativeShifts.append(relShift)
 
 
     def drawGrid(self):
