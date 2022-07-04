@@ -8,7 +8,7 @@ for Friedrich Schiller Universität Jena
 
 import os
 import sys
-
+import math
 import scipy.optimize as opt
 import random
 from PyQt5.QtWidgets import (
@@ -51,7 +51,7 @@ matplotlib.use('QT5Agg')
 
 class DummySaveFileDialogWidget(QWidget):
 
-    def __init__(self, title="Save Graph", filters="Png File (*.png)"):
+    def __init__(self, title="Save Graph", filters="PDF File (*.pdf)"):
         super().__init__()
         self.title = title
         self.filters = filters
@@ -88,12 +88,14 @@ class Window(QMainWindow, Ui_MainWindow):
         super().__init__(parent)
         self.setupUi(self)
         self.connectSignalsSlots()
+        print(zernike.ZernikePolynomial(j=15).radial_part)
+
         colorlist=["#001f78","#3d66d9","#53b4c9","#2adea2","#8ccf55", "#eded1f", "#c49110", "#d41f0f"]
         self.colormap = LinearSegmentedColormap.from_list('testCmap', colors=colorlist, N=1000)
         self.ax1 = self.plotSensor.canvas.ax
         self.ax2 = self.plotSensor_2.canvas.ax
         self.grid = []
-        self.nFoci = 25 #default
+        self.nFoci = 64 #default
         self.relativeShifts = []
     def connectSignalsSlots(self):
         """
@@ -102,7 +104,7 @@ class Window(QMainWindow, Ui_MainWindow):
         self.btnTakeImage.clicked.connect(self.TestImageProcessing)
         self.btnShow.clicked.connect(self.reconstructWavefront)
         self.btnSavePDF.clicked.connect(self.save)
-
+        self.horizontalSlider.valueChanged.connect(self.updateWav)
 #Action Functions
 
     def TestImageProcessing(self):
@@ -115,9 +117,12 @@ class Window(QMainWindow, Ui_MainWindow):
 
         """
 
+        
+        self.plotSensor.canvas.ax.cla()
+        self.plotSensor_2.canvas.ax.cla()
         print("TEST Image")
 
-        img = mpimg.imread('may.jpg')
+        img = mpimg.imread('last.jpg')
         #img = mpimg.imread('singlePoint.jpg')
         image = np.zeros((1000, 1000))
         for i in range(len(img)):
@@ -130,7 +135,8 @@ class Window(QMainWindow, Ui_MainWindow):
         xy = peak_local_max(image, min_distance=7)#int((len(img))/self.nFoci-10))
         self.nFoci = 64#len(xy)
 
-        
+        self.image = image
+
        #image_max = ndimage.maximum_filter(image, size=10, mode='constant')
         #self.ax2.imshow(image_max, cmap = self.colormap)
 
@@ -150,16 +156,29 @@ class Window(QMainWindow, Ui_MainWindow):
         for foci in self.guessList:
             relShift = self.findCellForSpot(foci).addFocusCoords(foci)
             self.relativeShifts.append(relShift)
-            
-        coefficients = self.fit_wavefront(5)
+        order = self.spinBox.value()
+        coefficients = self.fit_wavefront(n_zernike=order)
+        """
+        coefficients = [0, 0.12, 0.214, 0.02, 0.1234, 0.3, 0.23, 0.423, 0.23, 0.23 ,0.234 ,0.4, 0.0234, 0.234, 0.234, 0.234]
+        polynom = 0
+        for i, coeff in enumerate(coefficients):
+            polynom = polynom + coeff * zernike.ZernikePolynomial(j=i).polar
+        """
+        print("Polynom")
+
         wavefront = zernike.Wavefront(coefficients=coefficients)     
         x_0, y_0 = zernike.get_unit_disk_meshgrid(resolution=1000)
         wf_grid = zernike.eval_cartesian(wavefront.cartesian, x_0=x_0, y_0=y_0)
-        #wf_grid[np.isnan(wf_grid)] = -1 
+        print("grid:")
+        print(wf_grid)
+
+        self.calculatedWavGrid = wf_grid
+        #
         #self.ax2.imshow(wf_grid,cmap=self.colormap, vmin = 0,vmax = 0.2)
-        limit = 1.1 * np.nanmax(np.abs(wf_grid))
+        maximum = self.horizontalSlider.value() / 1000
+        wf_grid[np.isnan(wf_grid)] = -1 
         self.ax2.imshow(wf_grid, interpolation='nearest', cmap=self.colormap,
-                        vmin=-limit, vmax=limit)
+                        vmin=-maximum, vmax=maximum)
         
         self.ax2.set_xlim(0, len(image[0,:]))
         self.ax2.set_ylim(0, len(image[:,0]))
@@ -188,7 +207,18 @@ class Window(QMainWindow, Ui_MainWindow):
         print("reconstructing Wavefront")
         
 
-
+    def updateWav(self):
+        if self.calculatedWavGrid is None:
+            return
+        else:
+            self.ax2.cla()
+            maximum = self.horizontalSlider.value() / 1000
+        
+            self.ax2.imshow(self.calculatedWavGrid, interpolation='nearest', cmap=self.colormap,
+                        vmin=-maximum, vmax=maximum)
+            self.ax2.set_xlim(0, self.imageWidth)
+            self.ax2.set_ylim(0, self.imageHeight)
+            self.plotSensor_2.canvas.draw()
 
 #Spot fitting fucntions:
     def fit2DGaussian(self, image, x0, y0, ampl):
@@ -429,12 +459,15 @@ class Window(QMainWindow, Ui_MainWindow):
             # where b' = b - n_subapertures, and (x, y)_b denotes the relative
             # position of the center of the b-th subaperture assuming the entire
             # sensor grid is placed on the unit disk.
-            d = np.full((n_zernike, 2 * n_ap), np.nan)
+            d = np.full((n_zernike, 2 * n_ap), np.nan)#hier war np.nan
     
             # Compute evaluation position (x, y), that is, the relative positions
             # of the centers of the subapertures
             
             self.grid_size = 8
+            
+            
+            """
             x_0 =  np.linspace((1 / self.grid_size - 1),
                                                (1 - 1 / self.grid_size),
                                                self.grid_size).reshape(1, -1)
@@ -454,7 +487,7 @@ class Window(QMainWindow, Ui_MainWindow):
                     yAbs = y_0[xi,xj]*self.imageHeight/2+midY
                     lX.append(xAbs)
                     lY.append(yAbs)
-
+            
             #self.ax1.plot(lX, lY, 'o', color='black')
             
             """
@@ -463,18 +496,21 @@ class Window(QMainWindow, Ui_MainWindow):
 
             for cell in self.grid:
                 if self.toRelImageCoords(cell.center)[0] == 0:
-                    x_0.append(0.000001)
+                    x_0.append(0.00000001)
                 else:
                     x_0.append(self.toRelImageCoords(cell.center)[0])
                     
                 if self.toRelImageCoords(cell.center)[1] == 0:
-                    y_0.append(0.000001)
+                    y_0.append(0.00000001)
                 else:
                     y_0.append(self.toRelImageCoords(cell.center)[1])
            # print("meine")
-            x_0 = np.array(x_0)
-            y_0 = np.array(y_0)
-            """
+            x_0 = np.array(x_0).reshape(self.grid_size,self.grid_size)
+            y_0 = np.array(y_0).reshape(self.grid_size,self.grid_size)
+
+                    
+            #self.ax1.plot(lX, lY, 'o', color='black')
+            
            # print(x_0.reshape(5,5))
            # print(y_0.reshape(5,5))
             # We compute the entries of D row by row, because rows correspond to
@@ -569,6 +605,13 @@ class Window(QMainWindow, Ui_MainWindow):
         form = DummySaveFileDialogWidget()
         if form.fname:
             self.plotSensor.canvas.fig.savefig(form.fname,bbox_inches="tight");
+            size = len(form.fname)
+            # Slice string to remove last 3 characters from string
+            mod_string = form.fname[:size - 4]
+            self.plotSensor_2.canvas.fig.savefig(mod_string+'_WaveFront.pdf',bbox_inches="tight");
+
+            
+           
             #plt.savefig(form.fname,bbox_inches="tight")
 
 if __name__ == "__main__":

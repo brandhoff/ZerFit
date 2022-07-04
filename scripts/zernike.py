@@ -7,7 +7,7 @@ import sympy as sy
 from copy import deepcopy
 from typing import Callable, Dict, Optional, Sequence, Tuple, Union
 
-
+import math
 #These functions and classes have been adopted from https://github.com/timothygebhard/hswfs/blob/master/hswfs/zernike.py
 #following MIT license standards
 
@@ -247,10 +247,12 @@ def eval_cartesian(
         # The multiplication with _ / _ makes sure that everything that is NaN
         # in the input also is NaN in the output; non-NaN values are unchanged
         def numpy_func(_: float, __: float) -> float:
-            return float(expression) * _ / _ * __ / __
-        print("guess")
+            if math.isnan(_) or math.isnan(__):
+                return float(expression)
+            if math.isinf(_) or math.isinf(__):
+                return np.nan
+            return float(expression)
         numpy_func = np.vectorize(numpy_func)
-        print("guess2")
 
     return numpy_func(x_0, y_0)
 
@@ -316,10 +318,14 @@ class ZernikePolynomial:
 
         # Otherwise, things are a little more complicated
         else:
-            return sum(sy.Pow(-1, k) * sy.binomial(self.n - k, k) *
+            ausdruck = sum(sy.Pow(-1, k) * sy.binomial(self.n - k, k) *
                        sy.binomial(self.n - 2 * k, (self.n - self.m) / 2 - k) *
                        sy.Pow(rho, self.n - 2 * k)
-                       for k in range(0, int((self.n - self.m) / 2) + 1))
+                       for k in range(0, int((self.n - self.m) / 2)+1))
+            if isinstance(ausdruck, sy.core.numbers.NaN):
+                if math.isnan(ausdruck):
+                    return 0
+            return ausdruck
 
     @property
     def azimuthal_part(self) -> sy.Expr:
@@ -484,3 +490,4 @@ class Wavefront:
         """
 
         return polar_to_cartesian(self.polar)
+    
