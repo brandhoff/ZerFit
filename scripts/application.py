@@ -573,7 +573,7 @@ class Window(QMainWindow, Ui_MainWindow):
                 # j, we can use the pre-computed derivatives from the fast_zernike
                 # module. For even higher orders, the derivatives first need to be
                 # computed "on demand", which is a lot slower.
-                if j <= 135:
+                if j <= 135 and not j == 15:
                     x_derivatives: np.ndarray = \
                         fast_zernike.zernike_derivative_cartesian(m, n, x_0, y_0, 'x')
                     y_derivatives: np.ndarray = \
