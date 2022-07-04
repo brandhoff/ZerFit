@@ -241,7 +241,13 @@ class Window(QMainWindow, Ui_MainWindow):
 
     def createGallery(self):
         x_0, y_0 = zernike.get_unit_disk_meshgrid(resolution=1000)
-        
+        self.plotSensor_2.canvas.ax.cla()
+        wf_grid = zernike.eval_cartesian(zernike.ZernikePolynomial(j=15).cartesian, x_0=x_0, y_0=y_0)
+        maximum = np.nanmax(np.abs(wf_grid))
+        self.ax2.imshow(wf_grid, interpolation='nearest', cmap=self.colormap,
+                        vmin=-maximum, vmax=maximum)
+        self.draw()
+        """
         for j in range(50):
             self.plotSensor_2.canvas.ax.cla()
             wf_grid = zernike.eval_cartesian(zernike.ZernikePolynomial(j=j).cartesian, x_0=x_0, y_0=y_0)
@@ -253,7 +259,7 @@ class Window(QMainWindow, Ui_MainWindow):
             plt.axis('off')
             self.draw()
             self.plotSensor_2.canvas.fig.savefig('Zernike'+str(j)+'.png',bbox_inches="tight");
-
+        """
 
 #Spot fitting fucntions:
     def fit2DGaussian(self, image, x0, y0, ampl):

@@ -9,7 +9,7 @@ from typing import Callable, Dict, Optional, Sequence, Tuple, Union
 
 import math
 #These functions and classes have been adopted from https://github.com/timothygebhard/hswfs/blob/master/hswfs/zernike.py
-#following MIT license standards
+#and modified concerning centering, normalization and binomial coeffient
 
 
 
@@ -316,15 +316,19 @@ class ZernikePolynomial:
         if (self.n - self.m) % 2 == 1:
             return sy.sympify(0)
 
-        # Otherwise, things are a little more complicated
+
+        #Dies ist die formel als bincoff geschrieben fuer den radial teil
+        # ACHTUNG leider returnt sympy einen komplexwertigen binomial koeff,
+        # der bei negativen k im komplexen divergiert und fuer unsere realwertigen
+        # funktionen probleme macht. ich habe in der binomial funktion dieses return
+        # einfach durch 1 (wie es im realen sein sollte) ersetzt.
+        # TODO: eigene binomial klasse schreiben, die nicht so einen unsinn macht....
         else:
             ausdruck = sum(sy.Pow(-1, k) * sy.binomial(self.n - k, k) *
                        sy.binomial(self.n - 2 * k, (self.n - self.m) / 2 - k) *
                        sy.Pow(rho, self.n - 2 * k)
                        for k in range(0, int((self.n - self.m) / 2)+1))
-            if isinstance(ausdruck, sy.core.numbers.NaN):
-                if math.isnan(ausdruck):
-                    return 0
+            
             return ausdruck
 
     @property
