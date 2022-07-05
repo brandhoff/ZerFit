@@ -129,7 +129,7 @@ class Window(QMainWindow, Ui_MainWindow):
         self.plotSensor_2.canvas.ax.cla()
         print("TEST Image")
 
-        img = mpimg.imread('may.jpg')
+        img = mpimg.imread('truePaper.jpg')
         #xy = peak_local_max(img,min_distance=20, num_peaks=64)#int((len(img))/self.nFoci-10))
         #xy = peak_local_max(img,min_distance=50)
         #img = mpimg.imread('singlePoint.jpg')
