@@ -3,8 +3,8 @@ restore_data_on_startup = True
 save_data_on_exit = True
 save_history = True
 save_non_project_files = False
-project_type = 'empty-project-type'
-recent_files = ['scripts\\application.py', 'scripts\\zernike.py', 'scripts\\fitFunctions.py', '..\\..\\..\\tools\\Anaconda\\lib\\site-packages\\skimage\\feature\\peak.py', 'scripts\\Grid.py', 'scripts\\fast_zernike.py', '..\\..\\..\\tools\\Anaconda\\lib\\site-packages\\sympy\\functions\\combinatorial\\factorials.py']
+project_type = empty-project-type
+recent_files = ['scripts/application.py', 'scripts/zernike.py', '../../../../Applications/anaconda3/lib/python3.8/site-packages/sympy/functions/combinatorial/factorials.py', 'scripts/fast_zernike.py', '../../../../Applications/anaconda3/lib/python3.8/site-packages/skimage/feature/peak.py']
 
 [main]
 version = 0.2.0
