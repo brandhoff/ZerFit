@@ -97,7 +97,6 @@ class Window(QMainWindow, Ui_MainWindow):
         self.nFoci = 64 #default
         self.relativeShifts = []
         self.guessList = []
-        self.relativeShifts = []
 
         
         
@@ -130,7 +129,7 @@ class Window(QMainWindow, Ui_MainWindow):
         self.plotSensor_2.canvas.ax.cla()
         print("TEST Image")
 
-        img = mpimg.imread('left.jpg')
+        img = mpimg.imread('Kreis.jpg')
         #img = mpimg.imread('singlePoint.jpg')
         image = np.zeros((1000, 1000))
         for i in range(len(img)):
@@ -140,7 +139,9 @@ class Window(QMainWindow, Ui_MainWindow):
         self.draw()
         
 
-        xy = peak_local_max(image, min_distance=7)#int((len(img))/self.nFoci-10))
+        xy = peak_local_max(image, min_distance=20)#int((len(img))/self.nFoci-10))
+        
+        print(len(xy))
         self.nFoci = 64#len(xy)
 
         self.image = image
@@ -184,20 +185,21 @@ class Window(QMainWindow, Ui_MainWindow):
         print("reconstructing Wavefront")
         order = self.spinBox.value()
         
-        """
+        
         coefficients = self.fit_wavefront(n_zernike=order)
 
 
         wavefront = zernike.Wavefront(coefficients=coefficients)     
         x_0, y_0 = zernike.get_unit_disk_meshgrid(resolution=1000)
         wf_grid = zernike.eval_cartesian(wavefront.cartesian, x_0=x_0, y_0=y_0)
+    
         """
-        
         x_0, y_0 = zernike.get_unit_disk_meshgrid(resolution=1000)
         wf_grid = zernike.eval_cartesian(zernike.ZernikePolynomial(j=order).cartesian, x_0=x_0, y_0=y_0)
         self.calculatedWavGrid = wf_grid
         #
         #self.ax2.imshow(wf_grid,cmap=self.colormap, vmin = 0,vmax = 0.2)
+        """
         maximum = self.horizontalSlider.value() / 1000
         wf_grid[np.isnan(wf_grid)] = -1 
         self.ax2.imshow(wf_grid, interpolation='nearest', cmap=self.colormap,
@@ -343,6 +345,7 @@ class Window(QMainWindow, Ui_MainWindow):
         for foci in self.guessList:
             relShift = self.findCellForSpot(foci).addFocusCoords(foci)
             self.relativeShifts.append(relShift)
+        print(len(self.relativeShifts))
 
 
     def drawGrid(self):
@@ -573,7 +576,7 @@ class Window(QMainWindow, Ui_MainWindow):
                 # j, we can use the pre-computed derivatives from the fast_zernike
                 # module. For even higher orders, the derivatives first need to be
                 # computed "on demand", which is a lot slower.
-                if j <= 135 and not j == 15:
+                if j <= 135 and not j == 15 and not j ==21 and not j==28 and not j== 29 and not j ==36 and not j == 37:
                     x_derivatives: np.ndarray = \
                         fast_zernike.zernike_derivative_cartesian(m, n, x_0, y_0, 'x')
                     y_derivatives: np.ndarray = \
