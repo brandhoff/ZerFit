@@ -129,30 +129,44 @@ class Window(QMainWindow, Ui_MainWindow):
         self.plotSensor_2.canvas.ax.cla()
         print("TEST Image")
 
-        img = mpimg.imread('Kreis.jpg')
+        img = mpimg.imread('may.jpg')
+        #xy = peak_local_max(img,min_distance=20, num_peaks=64)#int((len(img))/self.nFoci-10))
+        #xy = peak_local_max(img,min_distance=50)
         #img = mpimg.imread('singlePoint.jpg')
         image = np.zeros((1000, 1000))
         for i in range(len(img)):
             for j in range(len(img)):
-                image[i,j] = np.sum(img[i,j])
+                image[i,j] = np.mean(img[i,j])
         self.ax1.imshow(image, cmap = self.colormap)
         self.draw()
         
-
-        xy = peak_local_max(image, min_distance=20)#int((len(img))/self.nFoci-10))
         
+        
+        
+        xy = []
+        #TODO das macht probleme warum auch immer funktionier min_distance nicht
+        #... er fittet teilweise spots die nur 1 asueinander sind
+        #alternative funktion schrieben
+        """
+        for imgSlice in image:
+            res = peak_local_max(imgSlice,min_distance=20, num_peaks=1)#int((len(img))/self.nFoci-10))
+            xy.append(res)
+            
+        print(xy)
         print(len(xy))
+        """
         self.nFoci = 64#len(xy)
 
         self.image = image
 
-       #image_max = ndimage.maximum_filter(image, size=10, mode='constant')
+        #image_max = ndimage.maximum_filter(image, size=50, mode='constant')
         #self.ax2.imshow(image_max, cmap = self.colormap)
-
-
+        #print(len(image_max))
+        """
         for t in xy:
             self.ax1.plot(t[1], t[0], 'o', color='orange', alpha=0.5)
             self.guessList.append((t[1], t[0]))
+        """
         self.draw()
         
         self.ax1.set_xlim(0, len(image[0,:]))
@@ -183,6 +197,8 @@ class Window(QMainWindow, Ui_MainWindow):
 
         """
         print("reconstructing Wavefront")
+        
+        #self.calculateRelativeShifts()
         order = self.spinBox.value()
         
         
@@ -202,6 +218,7 @@ class Window(QMainWindow, Ui_MainWindow):
         """
         maximum = self.horizontalSlider.value() / 1000
         wf_grid[np.isnan(wf_grid)] = -1 
+        self.calculatedWavGrid = wf_grid
         self.ax2.imshow(wf_grid, interpolation='nearest', cmap=self.colormap,
                         vmin=-maximum, vmax=maximum)
         
@@ -242,6 +259,9 @@ class Window(QMainWindow, Ui_MainWindow):
         self.draw()
 
     def createGallery(self):
+        
+        self.findSpotInGrid()
+        """
         x_0, y_0 = zernike.get_unit_disk_meshgrid(resolution=1000)
         self.plotSensor_2.canvas.ax.cla()
         wf_grid = zernike.eval_cartesian(zernike.ZernikePolynomial(j=15).cartesian, x_0=x_0, y_0=y_0)
@@ -249,6 +269,7 @@ class Window(QMainWindow, Ui_MainWindow):
         self.ax2.imshow(wf_grid, interpolation='nearest', cmap=self.colormap,
                         vmin=-maximum, vmax=maximum)
         self.draw()
+        """
         """
         for j in range(50):
             self.plotSensor_2.canvas.ax.cla()
@@ -264,6 +285,38 @@ class Window(QMainWindow, Ui_MainWindow):
         """
 
 #Spot fitting fucntions:
+    
+    
+    
+    def findSpotInGrid(self):
+        
+        for cell in self.grid:
+            img = self.image
+            lowerleft = cell.relToAb((-1,-1)) #unten links
+            upperright = cell.relToAb((1,1))#oben rechts
+            sliecedCell = img[int(lowerleft[0]):int(upperright[0]), int(lowerleft[1]):int(upperright[1])]
+            xy = peak_local_max(sliecedCell,min_distance=0, num_peaks=1)
+            if len(xy) == 1:
+                item = xy[0]
+                abItemX = item[0] + lowerleft[0]
+                abItemY = item[1] + lowerleft[1]
+                
+                (relItemX, relItemY) = cell.abToRel((abItemX,abItemY))
+                #print((relItemX, relItemY))
+                #print((abItemX,abItemY))
+                self.relativeShifts.append((relItemX, relItemY))
+                #self.guessList.append((item[1]+int(lowerleft[1]), item[0]+int(lowerleft[0])))
+                self.ax1.plot(abItemX, abItemY, 'o', color='orange', alpha=0.5)
+            
+            
+            
+            else:
+                print("No spot found :(")
+        #print(self.relativeShifts)
+        self.draw()
+        #
+    
+    
     def fit2DGaussian(self, image, x0, y0, ampl):
         """
         This functions fits a 2D Gaussian (defined in fitFunctions) to a spot at init guess x0 y0 with ampl
@@ -345,7 +398,7 @@ class Window(QMainWindow, Ui_MainWindow):
         for foci in self.guessList:
             relShift = self.findCellForSpot(foci).addFocusCoords(foci)
             self.relativeShifts.append(relShift)
-        print(len(self.relativeShifts))
+        #print(len(self.relativeShifts))
 
 
     def drawGrid(self):
