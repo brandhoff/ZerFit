@@ -11,7 +11,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(1158, 736)
+        MainWindow.resize(1137, 746)
         MainWindow.setStyleSheet("background-color: #FFF")
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
@@ -24,11 +24,10 @@ class Ui_MainWindow(object):
         self.plotSensor.setGeometry(QtCore.QRect(20, 20, 500, 500))
         self.plotSensor.setObjectName("plotSensor")
         self.btnTakeImage = QtWidgets.QPushButton(self.tabMain)
-        self.btnTakeImage.setGeometry(QtCore.QRect(20, 550, 171, 61))
+        self.btnTakeImage.setGeometry(QtCore.QRect(10, 550, 171, 61))
         self.btnTakeImage.setStyleSheet("color: #fff;\n"
 "background-color: #337ab7;\n"
 "border-color: #2e6da4;\n"
-"cursor: pointer;\n"
 "background-image: none;\n"
 "border: 1px solid transparent;\n"
 "border-radius: 4px;")
@@ -41,7 +40,6 @@ class Ui_MainWindow(object):
         self.btnShow.setStyleSheet("color: #fff;\n"
 "background-color: #337ab7;\n"
 "border-color: #2e6da4;\n"
-"cursor: pointer;\n"
 "background-image: none;\n"
 "border: 1px solid transparent;\n"
 "border-radius: 4px;")
@@ -51,7 +49,6 @@ class Ui_MainWindow(object):
         self.btnSavePDF.setStyleSheet("color: #fff;\n"
 "background-color: #337ab7;\n"
 "border-color: #2e6da4;\n"
-"cursor: pointer;\n"
 "background-image: none;\n"
 "border: 1px solid transparent;\n"
 "border-radius: 4px;")
@@ -61,7 +58,6 @@ class Ui_MainWindow(object):
         self.btnSave_2.setStyleSheet("color: #fff;\n"
 "background-color: #337ab7;\n"
 "border-color: #2e6da4;\n"
-"cursor: pointer;\n"
 "background-image: none;\n"
 "border: 1px solid transparent;\n"
 "border-radius: 4px;")
@@ -69,6 +65,7 @@ class Ui_MainWindow(object):
         self.spinBox = QtWidgets.QSpinBox(self.tabMain)
         self.spinBox.setGeometry(QtCore.QRect(590, 620, 71, 24))
         self.spinBox.setMinimum(1)
+        self.spinBox.setProperty("value", 6)
         self.spinBox.setObjectName("spinBox")
         self.label_2 = QtWidgets.QLabel(self.tabMain)
         self.label_2.setGeometry(QtCore.QRect(660, 620, 61, 21))
@@ -80,35 +77,42 @@ class Ui_MainWindow(object):
         self.horizontalSlider.setOrientation(QtCore.Qt.Horizontal)
         self.horizontalSlider.setObjectName("horizontalSlider")
         self.btnCreateGrid = QtWidgets.QPushButton(self.tabMain)
-        self.btnCreateGrid.setGeometry(QtCore.QRect(210, 550, 171, 61))
+        self.btnCreateGrid.setGeometry(QtCore.QRect(190, 550, 171, 61))
         self.btnCreateGrid.setStyleSheet("color: #fff;\n"
 "background-color: #337ab7;\n"
 "border-color: #2e6da4;\n"
-"cursor: pointer;\n"
 "background-image: none;\n"
 "border: 1px solid transparent;\n"
 "border-radius: 4px;")
         self.btnCreateGrid.setObjectName("btnCreateGrid")
+        self.btnFindSpots = QtWidgets.QPushButton(self.tabMain)
+        self.btnFindSpots.setGeometry(QtCore.QRect(370, 550, 171, 61))
+        self.btnFindSpots.setStyleSheet("color: #fff;\n"
+"background-color: #337ab7;\n"
+"border-color: #2e6da4;\n"
+"background-image: none;\n"
+"border: 1px solid transparent;\n"
+"border-radius: 4px;")
+        self.btnFindSpots.setObjectName("btnFindSpots")
+        self.checkBoxAutomatic = QtWidgets.QCheckBox(self.tabMain)
+        self.checkBoxAutomatic.setGeometry(QtCore.QRect(10, 620, 111, 21))
+        self.checkBoxAutomatic.setObjectName("checkBoxAutomatic")
         self.tabWidget.addTab(self.tabMain, "")
         self.tabCalibration = QtWidgets.QWidget()
         self.tabCalibration.setObjectName("tabCalibration")
-        self.plotSensor_3 = MplWidget(self.tabCalibration)
-        self.plotSensor_3.setGeometry(QtCore.QRect(20, 10, 1000, 1000))
-        self.plotSensor_3.setObjectName("plotSensor_3")
-        self.btnImgCali = QtWidgets.QPushButton(self.tabCalibration)
-        self.btnImgCali.setGeometry(QtCore.QRect(1030, 70, 221, 71))
-        self.btnImgCali.setStyleSheet("color: #fff;\n"
+        self.plotAnalyse = MplWidget(self.tabCalibration)
+        self.plotAnalyse.setGeometry(QtCore.QRect(20, 10, 500, 500))
+        self.plotAnalyse.setObjectName("plotAnalyse")
+        self.btnPlotZernike = QtWidgets.QPushButton(self.tabCalibration)
+        self.btnPlotZernike.setGeometry(QtCore.QRect(540, 10, 221, 71))
+        self.btnPlotZernike.setStyleSheet("color: #fff;\n"
 "background-color: #337ab7;\n"
 "border-color: #2e6da4;\n"
 "cursor: pointer;\n"
 "background-image: none;\n"
 "border: 1px solid transparent;\n"
 "border-radius: 4px;")
-        self.btnImgCali.setObjectName("btnImgCali")
-        self.checkBox = QtWidgets.QCheckBox(self.tabCalibration)
-        self.checkBox.setGeometry(QtCore.QRect(1040, 30, 201, 23))
-        self.checkBox.setChecked(True)
-        self.checkBox.setObjectName("checkBox")
+        self.btnPlotZernike.setObjectName("btnPlotZernike")
         self.spinNumFoci = QtWidgets.QSpinBox(self.tabCalibration)
         self.spinNumFoci.setGeometry(QtCore.QRect(1270, 30, 111, 31))
         self.spinNumFoci.setObjectName("spinNumFoci")
@@ -116,7 +120,7 @@ class Ui_MainWindow(object):
         self.label.setGeometry(QtCore.QRect(1400, 30, 151, 31))
         self.label.setObjectName("label")
         self.btnFindSpotsCali = QtWidgets.QPushButton(self.tabCalibration)
-        self.btnFindSpotsCali.setGeometry(QtCore.QRect(1030, 160, 221, 71))
+        self.btnFindSpotsCali.setGeometry(QtCore.QRect(540, 100, 221, 71))
         self.btnFindSpotsCali.setStyleSheet("color: #fff;\n"
 "background-color: #337ab7;\n"
 "border-color: #2e6da4;\n"
@@ -125,20 +129,18 @@ class Ui_MainWindow(object):
 "border: 1px solid transparent;\n"
 "border-radius: 4px;")
         self.btnFindSpotsCali.setObjectName("btnFindSpotsCali")
-        self.btnBuildGrid = QtWidgets.QPushButton(self.tabCalibration)
-        self.btnBuildGrid.setGeometry(QtCore.QRect(1030, 250, 221, 71))
-        self.btnBuildGrid.setStyleSheet("color: #fff;\n"
-"background-color: #337ab7;\n"
-"border-color: #2e6da4;\n"
-"cursor: pointer;\n"
-"background-image: none;\n"
-"border: 1px solid transparent;\n"
-"border-radius: 4px;")
-        self.btnBuildGrid.setObjectName("btnBuildGrid")
+        self.spinBoxSingleZernike = QtWidgets.QSpinBox(self.tabCalibration)
+        self.spinBoxSingleZernike.setGeometry(QtCore.QRect(770, 30, 71, 24))
+        self.spinBoxSingleZernike.setMinimum(1)
+        self.spinBoxSingleZernike.setProperty("value", 6)
+        self.spinBoxSingleZernike.setObjectName("spinBoxSingleZernike")
+        self.label_3 = QtWidgets.QLabel(self.tabCalibration)
+        self.label_3.setGeometry(QtCore.QRect(840, 30, 61, 21))
+        self.label_3.setObjectName("label_3")
         self.tabWidget.addTab(self.tabCalibration, "")
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 1158, 31))
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 1137, 31))
         self.menubar.setObjectName("menubar")
         MainWindow.setMenuBar(self.menubar)
         self.statusbar = QtWidgets.QStatusBar(MainWindow)
@@ -158,12 +160,13 @@ class Ui_MainWindow(object):
         self.btnSave_2.setText(_translate("MainWindow", "Save TXT"))
         self.label_2.setText(_translate("MainWindow", "Order"))
         self.btnCreateGrid.setText(_translate("MainWindow", "Create Grid"))
+        self.btnFindSpots.setText(_translate("MainWindow", "Find Spots"))
+        self.checkBoxAutomatic.setText(_translate("MainWindow", "Automatic "))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tabMain), _translate("MainWindow", "Main"))
-        self.btnImgCali.setText(_translate("MainWindow", "Take Image"))
-        self.checkBox.setText(_translate("MainWindow", "Use analytic Calibration"))
+        self.btnPlotZernike.setText(_translate("MainWindow", "Plot Zernike"))
         self.label.setText(_translate("MainWindow", "Number of Foci"))
-        self.btnFindSpotsCali.setText(_translate("MainWindow", "Find Spots"))
-        self.btnBuildGrid.setText(_translate("MainWindow", "Build Grid"))
+        self.btnFindSpotsCali.setText(_translate("MainWindow", "Open Exported TXT"))
+        self.label_3.setText(_translate("MainWindow", "Order"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tabCalibration), _translate("MainWindow", "Analyse"))
 
 from mplwidget import MplWidget

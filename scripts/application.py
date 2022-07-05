@@ -43,6 +43,7 @@ from lmfit import Model, Parameters
 import Grid
 import lmfit
 from PyQt5.QtWidgets import (QApplication, QFileDialog, QWidget)
+from PyQt5 import QtGui
 import zernike
 import fast_zernike
 from lmfit.lineshapes import gaussian2d, lorentzian
@@ -86,6 +87,8 @@ class Window(QMainWindow, Ui_MainWindow):
     """
     def __init__(self, parent=None):
         super().__init__(parent)
+        self.setWindowIcon(QtGui.QIcon('logo.png'))
+        self.setWindowTitle("ZerFit")
         self.setupUi(self)
         self.connectSignalsSlots()
 
@@ -93,6 +96,8 @@ class Window(QMainWindow, Ui_MainWindow):
         self.colormap = LinearSegmentedColormap.from_list('testCmap', colors=colorlist, N=1000)
         self.ax1 = self.plotSensor.canvas.ax
         self.ax2 = self.plotSensor_2.canvas.ax
+        self.axAnalyse = self.plotAnalyse.canvas.ax
+
         self.grid = []
         self.nFoci = 64 #default
         self.relativeShifts = []
@@ -109,9 +114,9 @@ class Window(QMainWindow, Ui_MainWindow):
         self.btnSavePDF.clicked.connect(self.save)
         self.horizontalSlider.valueChanged.connect(self.updateWav)
         self.btnCreateGrid.clicked.connect(self.buildGrid)
-        
-        self.btnSave_2.clicked.connect(self.createGallery)
-        
+        self.btnFindSpots.clicked.connect(self.findSpotInGrid)
+        self.btnSave_2.clicked.connect(self.saveRAW)
+        self.btnPlotZernike.clicked.connect(self.showSingleZernike)
 #Action Functions
 
     def TestImageProcessing(self):
@@ -129,10 +134,8 @@ class Window(QMainWindow, Ui_MainWindow):
         self.plotSensor_2.canvas.ax.cla()
         print("TEST Image")
 
-        img = mpimg.imread('truePaper.jpg')
-        #xy = peak_local_max(img,min_distance=20, num_peaks=64)#int((len(img))/self.nFoci-10))
-        #xy = peak_local_max(img,min_distance=50)
-        #img = mpimg.imread('singlePoint.jpg')
+        img = mpimg.imread('perfectFront.jpg')
+
         image = np.zeros((1000, 1000))
         for i in range(len(img)):
             for j in range(len(img)):
@@ -140,33 +143,12 @@ class Window(QMainWindow, Ui_MainWindow):
         self.ax1.imshow(image, cmap = self.colormap)
         self.draw()
         
-        
-        
-        
-        xy = []
-        #TODO das macht probleme warum auch immer funktionier min_distance nicht
-        #... er fittet teilweise spots die nur 1 asueinander sind
-        #alternative funktion schrieben
-        """
-        for imgSlice in image:
-            res = peak_local_max(imgSlice,min_distance=20, num_peaks=1)#int((len(img))/self.nFoci-10))
-            xy.append(res)
-            
-        print(xy)
-        print(len(xy))
-        """
+
         self.nFoci = 64#len(xy)
 
         self.image = image
 
-        #image_max = ndimage.maximum_filter(image, size=50, mode='constant')
-        #self.ax2.imshow(image_max, cmap = self.colormap)
-        #print(len(image_max))
-        """
-        for t in xy:
-            self.ax1.plot(t[1], t[0], 'o', color='orange', alpha=0.5)
-            self.guessList.append((t[1], t[0]))
-        """
+
         self.draw()
         
         self.ax1.set_xlim(0, len(image[0,:]))
@@ -210,11 +192,7 @@ class Window(QMainWindow, Ui_MainWindow):
         wf_grid = zernike.eval_cartesian(wavefront.cartesian, x_0=x_0, y_0=y_0)
     
         """
-        x_0, y_0 = zernike.get_unit_disk_meshgrid(resolution=1000)
-        wf_grid = zernike.eval_cartesian(zernike.ZernikePolynomial(j=order).cartesian, x_0=x_0, y_0=y_0)
-        self.calculatedWavGrid = wf_grid
-        #
-        #self.ax2.imshow(wf_grid,cmap=self.colormap, vmin = 0,vmax = 0.2)
+
         """
         maximum = self.horizontalSlider.value() / 1000
         wf_grid[np.isnan(wf_grid)] = -1 
@@ -258,37 +236,15 @@ class Window(QMainWindow, Ui_MainWindow):
         self.calculateRelativeShifts()
         self.draw()
 
-    def createGallery(self):
-        
-        self.findSpotInGrid()
-        """
-        x_0, y_0 = zernike.get_unit_disk_meshgrid(resolution=1000)
-        self.plotSensor_2.canvas.ax.cla()
-        wf_grid = zernike.eval_cartesian(zernike.ZernikePolynomial(j=15).cartesian, x_0=x_0, y_0=y_0)
-        maximum = np.nanmax(np.abs(wf_grid))
-        self.ax2.imshow(wf_grid, interpolation='nearest', cmap=self.colormap,
-                        vmin=-maximum, vmax=maximum)
-        self.draw()
-        """
-        """
-        for j in range(50):
-            self.plotSensor_2.canvas.ax.cla()
-            wf_grid = zernike.eval_cartesian(zernike.ZernikePolynomial(j=j).cartesian, x_0=x_0, y_0=y_0)
-            maximum = np.nanmax(np.abs(wf_grid))
-            self.ax2.imshow(wf_grid, interpolation='nearest', cmap=self.colormap,
-                            vmin=-maximum, vmax=maximum)
-            
-            
-            plt.axis('off')
-            self.draw()
-            self.plotSensor_2.canvas.fig.savefig('Zernike'+str(j)+'.png',bbox_inches="tight");
-        """
-
-#Spot fitting fucntions:
-    
-    
-    
     def findSpotInGrid(self):
+        """
+        
+
+        Returns
+        -------
+        None.
+
+        """
         
         for cell in self.grid:
             img = self.image
@@ -302,19 +258,48 @@ class Window(QMainWindow, Ui_MainWindow):
                 abItemY = item[1] + lowerleft[1]
                 
                 (relItemX, relItemY) = cell.abToRel((abItemX,abItemY))
-                #print((relItemX, relItemY))
-                #print((abItemX,abItemY))
+
                 self.relativeShifts.append((relItemX, relItemY))
-                #self.guessList.append((item[1]+int(lowerleft[1]), item[0]+int(lowerleft[0])))
                 self.ax1.plot(abItemX, abItemY, 'o', color='orange', alpha=0.5)
-            
-            
-            
             else:
                 print("No spot found :(")
-        #print(self.relativeShifts)
         self.draw()
-        #
+
+    def createGallery(self):
+        
+        self.findSpotInGrid()
+
+
+
+
+
+#---------------------------------------------------------------------
+#---------------------------------------------------------------------
+#--------------------------ANALYSIS-----------------------------------
+#---------------------------------------------------------------------
+#---------------------------------------------------------------------
+
+    def showSingleZernike(self):
+        self.axAnalyse.cla()
+        x_0, y_0 = zernike.get_unit_disk_meshgrid(resolution=1000)
+        wf_grid = zernike.eval_cartesian(zernike.ZernikePolynomial(j=self.spinBoxSingleZernike.value()).cartesian, x_0=x_0, y_0=y_0)
+        limit = np.nanmax(np.abs(wf_grid))
+        
+        self.axAnalyse.imshow(wf_grid,cmap=self.colormap, vmin = -limit,vmax = limit)
+        self.draw()
+
+
+
+
+
+
+
+
+
+
+
+
+#Spot fitting fucntions:
     
     
     def fit2DGaussian(self, image, x0, y0, ampl):
@@ -696,6 +681,7 @@ class Window(QMainWindow, Ui_MainWindow):
     def draw(self):
         self.plotSensor.canvas.draw()
         self.plotSensor_2.canvas.draw()
+        self.plotAnalyse.canvas.draw()
     def plotClear(self):
         self.plotSensor.canvas.ax.cla()
         self.plotSensor.canvas.draw()
@@ -704,6 +690,20 @@ class Window(QMainWindow, Ui_MainWindow):
 
 
 
+    def saveRAW(self):
+        
+        app = QApplication(['./'])
+        form = TXTSaveFileDialogWidget()
+        if form.fname:
+            np.savetxt(form.fname, self.image)
+            size = len(form.fname)
+            # Slice string to remove last 3 characters from string
+            mod_string = form.fname[:size - 4]
+            np.savetxt(mod_string+'_WaveFront.txt', self.calculatedWavGrid);
+
+            
+                       
+            
     def save(self):
         
         app = QApplication(['./'])
@@ -716,9 +716,6 @@ class Window(QMainWindow, Ui_MainWindow):
             self.plotSensor_2.canvas.fig.savefig(mod_string+'_WaveFront.pdf',bbox_inches="tight");
 
             
-           
-            #plt.savefig(form.fname,bbox_inches="tight")
-
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     
