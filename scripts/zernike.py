@@ -6,13 +6,17 @@ import numpy as np
 import sympy as sy
 from copy import deepcopy
 from typing import Callable, Dict, Optional, Sequence, Tuple, Union
-
+from sympy.core import S
 import math
 #These functions and classes have been adopted from https://github.com/timothygebhard/hswfs/blob/master/hswfs/zernike.py
 #and modified concerning centering, normalization and binomial coeffient
 
 
-
+def fixedbinomial_(n: int, k: int) -> int:
+        result = sy.binomial(n, k)
+        if result == S.ComplexInfinity:
+            return 1
+        return result
 
 def get_unit_disk_meshgrid(
     resolution: int,
@@ -296,6 +300,8 @@ class ZernikePolynomial:
     def __repr__(self) -> str:
         return f'Z^{self.m}_{self.n}'
 
+
+
     @property
     def radial_part(self) -> sy.Expr:
         r"""
@@ -324,8 +330,8 @@ class ZernikePolynomial:
         # einfach durch 1 (wie es im realen sein sollte) ersetzt.
         # TODO: eigene binomial klasse schreiben, die nicht so einen unsinn macht....
         else:
-            ausdruck = sum(sy.Pow(-1, k) * sy.binomial(self.n - k, k) *
-                       sy.binomial(self.n - 2 * k, (self.n - self.m) / 2 - k) *
+            ausdruck = sum(sy.Pow(-1, k) * fixedbinomial_(self.n - k, k) *
+                       fixedbinomial_(self.n - 2 * k, (self.n - self.m) / 2 - k) *
                        sy.Pow(rho, self.n - 2 * k)
                        for k in range(0, int((self.n - self.m) / 2)+1))
             
