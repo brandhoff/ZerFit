@@ -12,7 +12,7 @@ import math
 import scipy.optimize as opt
 import random
 from PyQt5.QtWidgets import (
-    QApplication, QDialog, QMainWindow, QMessageBox
+    QApplication, QDialog, QMainWindow, QMessageBox, QMenu
 )
 from PyQt5.uic import loadUi
 from PyQt5.QtWidgets import QDialog, QFileDialog
@@ -44,6 +44,7 @@ import Grid
 import lmfit
 from PyQt5.QtWidgets import (QApplication, QFileDialog, QWidget)
 from PyQt5 import QtGui
+from PyQt5.QtCore import QEvent
 import zernike
 import fast_zernike
 from lmfit.lineshapes import gaussian2d, lorentzian
@@ -102,7 +103,8 @@ class Window(QMainWindow, Ui_MainWindow):
         self.nFoci = 64 #default
         self.relativeShifts = []
         self.guessList = []
-
+        self.AnylseArr = []
+        self.calcCoeff = []
         
         
     def connectSignalsSlots(self):
@@ -112,11 +114,28 @@ class Window(QMainWindow, Ui_MainWindow):
         self.btnTakeImage.clicked.connect(self.TestImageProcessing)
         self.btnShow.clicked.connect(self.reconstructWavefront)
         self.btnSavePDF.clicked.connect(self.save)
+        
+        #slider
         self.horizontalSlider.valueChanged.connect(self.updateWav)
+        self.sliderAnalyse.valueChanged.connect(self.updateAnalyseView)
+
+        
         self.btnCreateGrid.clicked.connect(self.buildGrid)
         self.btnFindSpots.clicked.connect(self.findSpotInGrid)
         self.btnSave_2.clicked.connect(self.saveRAW)
+        
+        
+        #ANALYSE
         self.btnPlotZernike.clicked.connect(self.showSingleZernike)
+        
+        self.btnFindSpotsCali.clicked.connect(self.loadTXT)#load already obtained data
+        self.plotSensor_2.installEventFilter(self)#right click menu event filter
+        self.plotSensor.installEventFilter(self)#right click menu event filter
+        self.plotAnalyse.installEventFilter(self)
+        
+        
+        
+
 #Action Functions
 
     def TestImageProcessing(self):
@@ -134,22 +153,20 @@ class Window(QMainWindow, Ui_MainWindow):
         self.plotSensor_2.canvas.ax.cla()
         print("TEST Image")
 
-        img = mpimg.imread('perfectFront.jpg')
+        img = mpimg.imread('may.jpg')
 
         image = np.zeros((1000, 1000))
         for i in range(len(img)):
             for j in range(len(img)):
                 image[i,j] = np.mean(img[i,j])
         self.ax1.imshow(image, cmap = self.colormap)
-        self.draw()
-        
+       
 
         self.nFoci = 64#len(xy)
 
         self.image = image
-
-
-        self.draw()
+        self.imageWidth = len(image[:,0])
+        self.imageHeight = len(image[0,:])
         
         self.ax1.set_xlim(0, len(image[0,:]))
         self.ax1.set_ylim(0, len(image[:,0]))
@@ -185,7 +202,7 @@ class Window(QMainWindow, Ui_MainWindow):
         
         
         coefficients = self.fit_wavefront(n_zernike=order)
-
+        self.calcCoeff = coefficients
 
         wavefront = zernike.Wavefront(coefficients=coefficients)     
         x_0, y_0 = zernike.get_unit_disk_meshgrid(resolution=1000)
@@ -233,7 +250,6 @@ class Window(QMainWindow, Ui_MainWindow):
         """
         self.buildAnalyticGrid(self.image, self.nFoci)
         self.drawGrid()
-        self.calculateRelativeShifts()
         self.draw()
 
     def findSpotInGrid(self):
@@ -245,13 +261,13 @@ class Window(QMainWindow, Ui_MainWindow):
         None.
 
         """
-        
+        self.relativeShifts = []
         for cell in self.grid:
             img = self.image
             lowerleft = cell.relToAb((-1,-1)) #unten links
             upperright = cell.relToAb((1,1))#oben rechts
             sliecedCell = img[int(lowerleft[0]):int(upperright[0]), int(lowerleft[1]):int(upperright[1])]
-            xy = peak_local_max(sliecedCell,min_distance=0, num_peaks=1)
+            xy = peak_local_max(sliecedCell,min_distance=1, num_peaks=1)
             if len(xy) == 1:
                 item = xy[0]
                 abItemX = item[0] + lowerleft[0]
@@ -262,7 +278,13 @@ class Window(QMainWindow, Ui_MainWindow):
                 self.relativeShifts.append((relItemX, relItemY))
                 self.ax1.plot(abItemX, abItemY, 'o', color='orange', alpha=0.5)
             else:
-                print("No spot found :(")
+                msg = QMessageBox()
+                msg.setIcon(QMessageBox.Critical)
+                msg.setText("No Spot Found")
+                msg.setInformativeText('While trying to find a Spot inside a cell nothing was found! Maybe the wavefront is too curved')
+                msg.setWindowTitle("Error")
+                msg.exec_()
+                return
         self.draw()
 
     def createGallery(self):
@@ -270,6 +292,77 @@ class Window(QMainWindow, Ui_MainWindow):
         self.findSpotInGrid()
 
 
+
+
+
+    def eventFilter(self, source, event):
+        #RIGHT CLICK MENU FOR THE WAVE FRONT
+        if event.type() == QEvent.ContextMenu and source is self.plotSensor_2:
+            menu = QMenu()
+            acShow3D = menu.addAction('Show 3D')
+            acShowCoeff = menu.addAction('Show Coefficients')
+            action = menu.exec_(event.globalPos())
+            if action == acShow3D:
+                print("Showing now 3D")
+                if len(self.calculatedWavGrid) > 0:
+                    fig, ax = plt.subplots(subplot_kw={"projection": "3d"})
+                    x_0, y_0 = zernike.get_unit_disk_meshgrid(resolution=1000)
+                    limit = np.nanmax(np.abs(self.calculatedWavGrid))
+                    surf = ax.plot_surface(x_0, y_0, self.calculatedWavGrid, cmap=self.colormap, linewidth=0, antialiased=False)
+                    maxi = np.amax(self.calculatedWavGrid)
+                    mini = np.amin(self.calculatedWavGrid)
+                    ax.set_zlim(mini, maxi)
+                return True
+            if action == acShowCoeff:
+                print("Showing Coeffs")
+                msg = QMessageBox()
+                msg.setIcon(QMessageBox.Information)
+                msg.setText("Coefficients")
+                stringShow = ''
+                for i,coeff in enumerate(self.calcCoeff):
+                    stringShow+='j='+str(i)+': '+str(coeff)+ '\n'
+                msg.setInformativeText(stringShow)
+                msg.setWindowTitle("Coefficients")
+                msg.exec_()
+
+        
+        #RIGHT CLICK MENU FOR THE IMAGE
+
+        if event.type() == QEvent.ContextMenu and source is self.plotSensor:
+            menu = QMenu()
+            acHideGrid = menu.addAction('Hide Grid')
+            acFindSpots = menu.addAction('Find Spots')
+            action = menu.exec_(event.globalPos())
+            if action == acHideGrid:
+                print("Hide Grid")
+                self.ax1.cla()                
+                self.ax1.imshow(self.image, cmap = self.colormap)
+                self.ax1.set_xlim(0, len(self.image[0,:]))
+                self.ax1.set_ylim(0, len(self.image[:,0]))
+                self.draw()
+            if action == acFindSpots:
+                self.findSpotInGrid()
+            return True
+        
+        #RIGHT CLICK MENU FOR ANALYSIS
+
+        if event.type() == QEvent.ContextMenu and source is self.plotAnalyse:
+            menu = QMenu()
+            acShowPoly = menu.addAction('Show Polynom')
+            action = menu.exec_(event.globalPos())
+            if action == acShowPoly:
+                msg = QMessageBox()
+                msg.setIcon(QMessageBox.Information)
+                msg.setText("Polynom of Degree: " + str(self.spinBoxSingleZernike.value()))
+                stringShow = 'Cartesian:' + '\n' + str(zernike.ZernikePolynomial(j=self.spinBoxSingleZernike.value()).cartesian) +'\n' + 'Polar:' + '\n' + str(zernike.ZernikePolynomial(j=self.spinBoxSingleZernike.value()).polar)
+                msg.setInformativeText(stringShow)
+                msg.setWindowTitle("Polynom")
+                msg.exec_()
+
+            return True
+        
+        
+        return super().eventFilter(source, event)
 
 
 
@@ -291,12 +384,29 @@ class Window(QMainWindow, Ui_MainWindow):
 
 
 
+    def loadTXT(self):
+        filename, _ = QFileDialog.getOpenFileName(self, 'Open file', 
+         'c:\\',"RAW file (*.txt)")
+        if filename:
+            self.axAnalyse.cla()
+            readARR = np.loadtxt(filename)
+            self.AnylseArr = readARR
+            self.axAnalyse.imshow(readARR,cmap=self.colormap) 
+            self.axAnalyse.set_xlim(0, len(self.AnylseArr[0]))
+            self.axAnalyse.set_ylim(0, len(self.AnylseArr))
+
+            self.draw()
 
 
-
-
-
-
+    def updateAnalyseView(self):
+        self.axAnalyse.cla()
+        maximum = self.sliderAnalyse.value() / 1000
+    
+        self.axAnalyse.imshow(self.AnylseArr, interpolation='nearest', cmap=self.colormap,
+                    vmin=-maximum, vmax=maximum)
+        self.axAnalyse.set_xlim(0, len(self.AnylseArr[0]))
+        self.axAnalyse.set_ylim(0, len(self.AnylseArr))
+        self.plotAnalyse.canvas.draw()
 
 
 #Spot fitting fucntions:
@@ -378,14 +488,6 @@ class Window(QMainWindow, Ui_MainWindow):
 
 
 
-    def calculateRelativeShifts(self):
-        self.relativeShifts = []
-        for foci in self.guessList:
-            relShift = self.findCellForSpot(foci).addFocusCoords(foci)
-            self.relativeShifts.append(relShift)
-        #print(len(self.relativeShifts))
-
-
     def drawGrid(self):
         """
         Draws the Grid of Cells
@@ -416,9 +518,7 @@ class Window(QMainWindow, Ui_MainWindow):
         None.
 
         """
-        self.imageWidth = len(image[:,0])
-        self.imageHeight = len(image[0,:])
-
+        self.grid = []
         numPer = int(np.sqrt(numFoci))
         
         for xi in range(numPer):

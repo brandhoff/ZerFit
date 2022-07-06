@@ -104,7 +104,7 @@ class Ui_MainWindow(object):
         self.plotAnalyse.setGeometry(QtCore.QRect(20, 10, 500, 500))
         self.plotAnalyse.setObjectName("plotAnalyse")
         self.btnPlotZernike = QtWidgets.QPushButton(self.tabCalibration)
-        self.btnPlotZernike.setGeometry(QtCore.QRect(540, 10, 221, 71))
+        self.btnPlotZernike.setGeometry(QtCore.QRect(530, 100, 221, 71))
         self.btnPlotZernike.setStyleSheet("color: #fff;\n"
 "background-color: #337ab7;\n"
 "border-color: #2e6da4;\n"
@@ -120,7 +120,7 @@ class Ui_MainWindow(object):
         self.label.setGeometry(QtCore.QRect(1400, 30, 151, 31))
         self.label.setObjectName("label")
         self.btnFindSpotsCali = QtWidgets.QPushButton(self.tabCalibration)
-        self.btnFindSpotsCali.setGeometry(QtCore.QRect(540, 100, 221, 71))
+        self.btnFindSpotsCali.setGeometry(QtCore.QRect(530, 180, 221, 71))
         self.btnFindSpotsCali.setStyleSheet("color: #fff;\n"
 "background-color: #337ab7;\n"
 "border-color: #2e6da4;\n"
@@ -130,14 +130,23 @@ class Ui_MainWindow(object):
 "border-radius: 4px;")
         self.btnFindSpotsCali.setObjectName("btnFindSpotsCali")
         self.spinBoxSingleZernike = QtWidgets.QSpinBox(self.tabCalibration)
-        self.spinBoxSingleZernike.setGeometry(QtCore.QRect(770, 30, 71, 24))
+        self.spinBoxSingleZernike.setGeometry(QtCore.QRect(760, 110, 71, 24))
         self.spinBoxSingleZernike.setMinimum(1)
         self.spinBoxSingleZernike.setProperty("value", 6)
         self.spinBoxSingleZernike.setObjectName("spinBoxSingleZernike")
         self.label_3 = QtWidgets.QLabel(self.tabCalibration)
-        self.label_3.setGeometry(QtCore.QRect(840, 30, 61, 21))
+        self.label_3.setGeometry(QtCore.QRect(830, 110, 61, 21))
         self.label_3.setObjectName("label_3")
+        self.sliderAnalyse = QtWidgets.QSlider(self.tabCalibration)
+        self.sliderAnalyse.setGeometry(QtCore.QRect(30, 520, 251, 22))
+        self.sliderAnalyse.setMaximum(1000)
+        self.sliderAnalyse.setProperty("value", 200)
+        self.sliderAnalyse.setOrientation(QtCore.Qt.Horizontal)
+        self.sliderAnalyse.setObjectName("sliderAnalyse")
         self.tabWidget.addTab(self.tabCalibration, "")
+        self.tab = QtWidgets.QWidget()
+        self.tab.setObjectName("tab")
+        self.tabWidget.addTab(self.tab, "")
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
         self.menubar.setGeometry(QtCore.QRect(0, 0, 1137, 31))
@@ -153,7 +162,7 @@ class Ui_MainWindow(object):
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
-        MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
+        MainWindow.setWindowTitle(_translate("MainWindow", "ZerFit"))
         self.btnTakeImage.setText(_translate("MainWindow", "Take Image"))
         self.btnShow.setText(_translate("MainWindow", "Reconstruct Wavefront"))
         self.btnSavePDF.setText(_translate("MainWindow", "Save PDF"))
@@ -166,7 +175,8 @@ class Ui_MainWindow(object):
         self.btnPlotZernike.setText(_translate("MainWindow", "Plot Zernike"))
         self.label.setText(_translate("MainWindow", "Number of Foci"))
         self.btnFindSpotsCali.setText(_translate("MainWindow", "Open Exported TXT"))
-        self.label_3.setText(_translate("MainWindow", "Order"))
+        self.label_3.setText(_translate("MainWindow", "Degree"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tabCalibration), _translate("MainWindow", "Analyse"))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab), _translate("MainWindow", "Camera"))
 
 from mplwidget import MplWidget
