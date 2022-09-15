@@ -7,6 +7,8 @@
 import IDSCam
 import numpy as np
 from matplotlib.patches import Circle
+from matplotlib.patches import Rectangle
+
 import matplotlib.pyplot as plt
 
 
@@ -39,10 +41,22 @@ class Camera:
         self.center = (x,y)
         self.radius = radius
         
-    def drawAreaOfInterest(self, axis):
-        circ = Circle(self.center,self.radius, fill = True, color = 'pink', alpha = 0.6)
-        axis.add_patch(circ)
+    def drawAreaOfInterest(self, axis, circle = False):
+        if circle:
+            circ = Circle(self.center,self.radius, fill = True, color = 'pink', alpha = 0.6)
+            axis.add_patch(circ)
+        else:
+            #xy, width, height
+            x = self.center[0]- self.radius
+            y = self.center[1]- self.radius
 
+            rect = Rectangle((x,y),2*self.radius,2*self.radius, fill = True, color = 'pink', alpha = 0.6)
+            axis.add_patch(rect)
+        
 
     def cutImageToAreaOfInterest(self, img):
-        return img
+        x = self.center[0]
+        y = self.center[1]
+        reshaped = img.reshape(self.width,self.height)
+        cutImg = img[ y-self.radius: y+self.radius, x-self.radius : x + self.radius]
+        return cutImg

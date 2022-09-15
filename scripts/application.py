@@ -10,6 +10,7 @@ import os
 import sys
 import math
 import scipy.optimize as opt
+from scipy import ndimage as ndi
 import random
 from PyQt5.QtWidgets import (
     QApplication, QDialog, QMainWindow, QMessageBox, QMenu
@@ -81,7 +82,17 @@ class TXTSaveFileDialogWidget(QWidget):
 
 
 
-
+#TODO list:
+    #Es muss unbedingt ein weg gefunden werden das analytsiche grid richtig zu centern
+    #dafuer muss man halt wissen wo genau das eigentlich center ist -> mit den pfeilen shiften bis es passt?
+    #
+    #Eine kreis maske einfuegen
+    #
+    #Eventuell einen bool knopf fuer halt 2D gauss fitten
+    #
+    #ich bin gespannt wie gross der spot des lasers dann ist...
+    #
+    #na mal sehen
 
 class Window(QMainWindow, Ui_MainWindow):
     """
@@ -166,17 +177,19 @@ class Window(QMainWindow, Ui_MainWindow):
         self.plotSensor_2.canvas.ax.cla()
         print("TEST Image")
 
-        img = mpimg.imread('may.jpg')
+        #img = mpimg.imread('may.jpg')
 
-        image = np.zeros((1000, 1000))
-        for i in range(len(img)):
-            for j in range(len(img)):
-                image[i,j] = np.mean(img[i,j])
+        #image = np.zeros((1000, 1000))
+        #for i in range(len(img)):
+        #    for j in range(len(img)):
+        #        image[i,j] = np.mean(img[i,j])
+        
+        image = self.cutImg
         self.ax1.imshow(image, cmap = self.colormap)
        
 
-        self.nFoci = 64#len(xy)
-
+        self.nFoci = self.gridGuess#64#len(xy)
+        print(self.nFoci)
         self.image = image
         self.imageWidth = len(image[:,0])
         self.imageHeight = len(image[0,:])
@@ -230,8 +243,8 @@ class Window(QMainWindow, Ui_MainWindow):
         self.ax2.imshow(wf_grid, interpolation='nearest', cmap=self.colormap,
                         vmin=-maximum, vmax=maximum)
         
-        self.ax2.set_xlim(0, self.imageWidth)
-        self.ax2.set_ylim(0, self.imageHeight)
+        #self.ax2.set_xlim(0, self.imageWidth)
+        #self.ax2.set_ylim(0, self.imageHeight)
         self.draw()
 
     def updateWav(self):
@@ -243,8 +256,8 @@ class Window(QMainWindow, Ui_MainWindow):
         
             self.ax2.imshow(self.calculatedWavGrid, interpolation='nearest', cmap=self.colormap,
                         vmin=-maximum, vmax=maximum)
-            self.ax2.set_xlim(0, self.imageWidth)
-            self.ax2.set_ylim(0, self.imageHeight)
+            #self.ax2.set_xlim(0, self.imageWidth)
+            #self.ax2.set_ylim(0, self.imageHeight)
             self.plotSensor_2.canvas.draw()
 
 
@@ -261,6 +274,8 @@ class Window(QMainWindow, Ui_MainWindow):
         None.
 
         """
+        print(self.nFoci)
+
         self.buildAnalyticGrid(self.image, self.nFoci)
         self.drawGrid()
         self.draw()
@@ -275,12 +290,16 @@ class Window(QMainWindow, Ui_MainWindow):
 
         """
         self.relativeShifts = []
+        flagZeros = False
+        flagMultiple = False
+
         for cell in self.grid:
             img = self.image
             lowerleft = cell.relToAb((-1,-1)) #unten links
             upperright = cell.relToAb((1,1))#oben rechts
             sliecedCell = img[int(lowerleft[0]):int(upperright[0]), int(lowerleft[1]):int(upperright[1])]
-            xy = peak_local_max(sliecedCell,min_distance=1, num_peaks=1)
+            
+            xy = peak_local_max(sliecedCell,min_distance = 20, exclude_border = 0, num_peaks=1)
             if len(xy) == 1:
                 item = xy[0]
                 abItemX = item[0] + lowerleft[0]
@@ -290,15 +309,37 @@ class Window(QMainWindow, Ui_MainWindow):
 
                 self.relativeShifts.append((relItemX, relItemY))
                 self.ax1.plot(abItemX, abItemY, 'o', color='orange', alpha=0.5)
+            elif len(xy) == 0:
+                flagZeros = True
+                self.relativeShifts.append((0, 0))
             else:
+                item = xy[0]
+                abItemX = item[0] + lowerleft[0]
+                abItemY = item[1] + lowerleft[1]
+                
+                (relItemX, relItemY) = cell.abToRel((abItemX,abItemY))
+
+                self.relativeShifts.append((relItemX, relItemY))
+                self.ax1.plot(abItemX, abItemY, 'o', color='green', alpha=0.7)
+                flagMultiple = True
+
+                
+        self.draw()
+        if flagZeros:
                 msg = QMessageBox()
                 msg.setIcon(QMessageBox.Critical)
                 msg.setText("No Spot Found")
-                msg.setInformativeText('While trying to find a Spot inside a cell nothing was found! Maybe the wavefront is too curved')
+                msg.setInformativeText('While trying to find a Spot inside a cell nothing was found! Maybe the wavefront is too curved. If this was intended the code will proceed as rel. shift of 0!')
                 msg.setWindowTitle("Error")
                 msg.exec_()
-                return
-        self.draw()
+        if flagMultiple:
+                        msg = QMessageBox()
+                        msg.setIcon(QMessageBox.Critical)
+                        msg.setText("Many Spots Found")
+                        msg.setInformativeText('While trying to find a Spot inside a cell multiple were found! Maybe the wavefront is too curved. If this was intended the code will proceed as if the first guess was the best!')
+                        msg.setWindowTitle("Error")
+                        msg.exec_()
+
 
     def createGallery(self):
         
@@ -389,9 +430,9 @@ class Window(QMainWindow, Ui_MainWindow):
 
     def CaliImgClick(self, click):
         #print(click.xdata)
-        if len(self.caliImg) > 0:
+        if len(self.deepCopyImg) > 0:
             self.axCali.cla()
-            self.axCali.imshow(self.caliImg, cmap = self.colormap)
+            self.axCali.imshow(self.deepCopyImg, cmap = self.colormap)
             radius = self.sliderCaliRadius.value()
             self.Camera.setAreaOfInterest(int(click.xdata), int(click.ydata), radius)
             self.Camera.drawAreaOfInterest(self.axCali)
@@ -408,14 +449,25 @@ class Window(QMainWindow, Ui_MainWindow):
         if self.connected:
             img = self.Camera.takeFullSizeImage()
             self.caliImg = img
+            self.deepCopyImg = img.copy()
             self.axCali.imshow(img, cmap = self.colormap)
             self.draw()
 
+    def clickSetRadius(self):#TODO das kann spaeter alles raus
+        self.axCali.cla()
+        cutImg = self.Camera.cutImageToAreaOfInterest(self.deepCopyImg)
+        self.axCali.imshow(cutImg, cmap = self.colormap)
+        self.cutImg = cutImg
+        self.tellMeAboutFoci(cutImg)
+        self.draw()
 
-
-
-
-
+    def tellMeAboutFoci(self, img):
+        
+        xy = peak_local_max(img.reshape(2*self.Camera.radius, 2*self.Camera.radius), min_distance = 20, exclude_border = 0)
+        
+        print("I guessed a grid of size:")
+        print(round(np.sqrt(len(xy))))
+        self.gridGuess = round(np.sqrt(len(xy)))**2
 
 
 
@@ -720,7 +772,7 @@ class Window(QMainWindow, Ui_MainWindow):
             # Compute evaluation position (x, y), that is, the relative positions
             # of the centers of the subapertures
             
-            self.grid_size = 8
+            self.grid_size = round(np.sqrt(self.nFoci))
             
             
             """
