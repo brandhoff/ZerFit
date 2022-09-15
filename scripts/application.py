@@ -41,6 +41,7 @@ import matplotlib.image as mpimg
 from lmfit.models import Gaussian2dModel
 from lmfit import Model, Parameters
 import Grid
+import CameraCalibration
 import lmfit
 from PyQt5.QtWidgets import (QApplication, QFileDialog, QWidget)
 from PyQt5 import QtGui
@@ -98,6 +99,7 @@ class Window(QMainWindow, Ui_MainWindow):
         self.ax1 = self.plotSensor.canvas.ax
         self.ax2 = self.plotSensor_2.canvas.ax
         self.axAnalyse = self.plotAnalyse.canvas.ax
+        self.axCali = self.plotSensor_3.canvas.ax
 
         self.grid = []
         self.nFoci = 64 #default
@@ -106,7 +108,13 @@ class Window(QMainWindow, Ui_MainWindow):
         self.AnylseArr = []
         self.calcCoeff = []
         
-        
+        #CAMER Stuff
+        self.caliImg = []
+        self.Camera = CameraCalibration.Camera()
+        self.isConnected = False
+        self.caliImg = None
+        self.sliderCaliRadius.setProperty("maximum", 500)
+
     def connectSignalsSlots(self):
         """
         This connects the button Presses etc with the corresponding action functions
@@ -133,7 +141,14 @@ class Window(QMainWindow, Ui_MainWindow):
         self.plotSensor.installEventFilter(self)#right click menu event filter
         self.plotAnalyse.installEventFilter(self)
         
+        #Camera Cali
+        #self.plotSensor_3.installEventFilter(self)#right click menu event filter
         
+        self.idCallCanvas = self.plotSensor_3.canvas.mpl_connect('button_press_event', self.CaliImgClick)
+        self.btnCaliConnect_2.clicked.connect(self.takeCaliImage) #TODO ändere diesen var namen
+        self.btnCaliConnect.clicked.connect(self.clickConnect)
+        self.btnCaliDisconnect.clicked.connect(self.clickDisconnect)
+        self.btnCaliRadius.clicked.connect(self.clickSetRadius)#TODO der kann raus
         
 
 #Action Functions
@@ -147,8 +162,6 @@ class Window(QMainWindow, Ui_MainWindow):
         None.
 
         """
-
-        
         self.plotSensor.canvas.ax.cla()
         self.plotSensor_2.canvas.ax.cla()
         print("TEST Image")
@@ -361,8 +374,61 @@ class Window(QMainWindow, Ui_MainWindow):
 
             return True
         
+        if event.type() == QEvent.ContextMenu and source is self.plotSensor_3:
+            print(event.x())
+            
+            return True
+        
         
         return super().eventFilter(source, event)
+#---------------------------------------------------------------------
+#---------------------------------------------------------------------
+#--------------------------CAMERA Calibration-----------------------------------
+#---------------------------------------------------------------------
+#---------------------------------------------------------------------
+
+    def CaliImgClick(self, click):
+        #print(click.xdata)
+        if len(self.caliImg) > 0:
+            self.axCali.cla()
+            self.axCali.imshow(self.caliImg, cmap = self.colormap)
+            radius = self.sliderCaliRadius.value()
+            self.Camera.setAreaOfInterest(int(click.xdata), int(click.ydata), radius)
+            self.Camera.drawAreaOfInterest(self.axCali)
+            self.draw()
+    def clickConnect(self):
+        if self.Camera.connectCamera():
+            self.connected = True
+
+    def clickDisconnect(self):
+        if self.connected:
+            self.Camera.disconnectCamera()
+
+    def takeCaliImage(self):
+        if self.connected:
+            img = self.Camera.takeFullSizeImage()
+            self.caliImg = img
+            self.axCali.imshow(img, cmap = self.colormap)
+            self.draw()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -782,10 +848,14 @@ class Window(QMainWindow, Ui_MainWindow):
         self.plotSensor.canvas.draw()
         self.plotSensor_2.canvas.draw()
         self.plotAnalyse.canvas.draw()
+        self.plotSensor_3.canvas.draw()
+
     def plotClear(self):
         self.plotSensor.canvas.ax.cla()
         self.plotSensor.canvas.draw()
-        
+        self.plotSensor_3.canvas.ax.cla()
+        self.plotSensor_3.canvas.draw()
+
         
 
 
