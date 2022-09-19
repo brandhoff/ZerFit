@@ -27,7 +27,7 @@
      </rect>
     </property>
     <property name="currentIndex">
-     <number>0</number>
+     <number>2</number>
     </property>
     <widget class="QWidget" name="tabMain">
      <attribute name="title">
@@ -451,8 +451,8 @@ border-radius: 4px;</string>
      <widget class="QSlider" name="sliderCaliRadius">
       <property name="geometry">
        <rect>
-        <x>560</x>
-        <y>500</y>
+        <x>200</x>
+        <y>530</y>
         <width>271</width>
         <height>22</height>
        </rect>
@@ -467,8 +467,29 @@ border-radius: 4px;</string>
      <widget class="QPushButton" name="btnCaliRadius">
       <property name="geometry">
        <rect>
-        <x>610</x>
-        <y>540</y>
+        <x>220</x>
+        <y>580</y>
+        <width>171</width>
+        <height>61</height>
+       </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">color: #fff;
+background-color: #337ab7;
+border-color: #2e6da4;
+background-image: none;
+border: 1px solid transparent;
+border-radius: 4px;</string>
+      </property>
+      <property name="text">
+       <string>Set Radius</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="btnCaliRadius_2">
+      <property name="geometry">
+       <rect>
+        <x>570</x>
+        <y>260</y>
         <width>171</width>
         <height>61</height>
        </rect>

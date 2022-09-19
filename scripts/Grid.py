@@ -107,7 +107,7 @@ class Cell:
         None.
 
         """
-        axis.plot(self.x0, self.y0, 'o', color=color)
+        axis.plot(self.x0, self.y0, 'o', color=color, markersize=2)
         
     def abToRel(self, coords):
         """

@@ -4,7 +4,7 @@ save_data_on_exit = True
 save_history = True
 save_non_project_files = False
 project_type = empty-project-type
-recent_files = ['scripts\\application.py', 'scripts\\Grid.py', 'scripts\\zernike.py', 'scripts\\fast_zernike.py', 'scripts\\MainWindow.py', 'scripts\\CamerStuff.py', 'scripts\\Tester.py', '..\\..\\..\\tools\\Anaconda\\lib\\site-packages\\pyueye\\ueye.py']
+recent_files = ['scripts\\application.py', 'scripts\\CameraCalibration.py', 'scripts\\MainWindow.py', 'scripts\\IDSCam.py', 'scripts\\Grid.py', 'scripts\\zernike.py', 'scripts\\fast_zernike.py', 'scripts\\CamerStuff.py', '..\\..\\Anaconda3\\lib\\site-packages\\pyueye\\ueye.py', '..\\..\\Anaconda3\\lib\\site-packages\\matplotlib\\patches.py', 'scripts\\fitFunctions.py']
 
 [main]
 version = 0.2.0
