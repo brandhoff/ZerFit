@@ -123,12 +123,12 @@ class Cell:
         relative coords tupel.
 
         """
-        if coords[0] > self.x0+self.width/2 or coords[1] > self.y0+self.height/2:
+        inside = self.isInside(coords)
+        if not inside:
             print("NOT INSIDE CELL")
+            print(coords)
             return (0,0)
-        if coords[0] < self.x0-self.width/2 or coords[1] < self.y0-self.height/2:
-            print("NOT INSIDE CELL")
-            return (0,0)
+
         xRel = (coords[0] - self.x0)/(self.width/2)
         yRel = (coords[1] - self.y0)/(self.height/2)
 

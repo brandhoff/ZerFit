@@ -86,9 +86,7 @@ class TXTSaveFileDialogWidget(QWidget):
     #Es muss unbedingt ein weg gefunden werden das analytsiche grid richtig zu centern
     #dafuer muss man halt wissen wo genau das eigentlich center ist -> mit den pfeilen shiften bis es passt?
     #
-    #Eine kreis maske einfuegen
-    #
-    #Eventuell einen bool knopf fuer halt 2D gauss fitten
+    #Ein autokorrekteur fuer tip und tilt
     #
     #ich bin gespannt wie gross der spot des lasers dann ist...
     #
@@ -144,10 +142,9 @@ class Window(QMainWindow, Ui_MainWindow):
         
         #self.btnFindSpots.clicked.connect(self.findSpotInGrid_singleCell)
         
-        self.btnFindSpots.clicked.connect(self.findSpotInGridUsingGaussian)
+        self.btnFindSpots.clicked.connect(self.clickedSpotsFinder)
         
         self.btnSave_2.clicked.connect(self.saveRAW)
-        
         
         #ANALYSE
         self.btnPlotZernike.clicked.connect(self.showSingleZernike)
@@ -248,8 +245,8 @@ class Window(QMainWindow, Ui_MainWindow):
         self.ax2.imshow(wf_grid, interpolation='nearest', cmap=self.colormap,
                         vmin=-maximum, vmax=maximum)
         
-        #self.ax2.set_xlim(0, self.imageWidth)
-        #self.ax2.set_ylim(0, self.imageHeight)
+        self.ax2.set_xlim(0, len(self.calculatedWavGrid)-1)
+        self.ax2.set_ylim(0,len(self.calculatedWavGrid))
         self.draw()
 
     def updateWav(self):
@@ -261,8 +258,8 @@ class Window(QMainWindow, Ui_MainWindow):
         
             self.ax2.imshow(self.calculatedWavGrid, interpolation='nearest', cmap=self.colormap,
                         vmin=-maximum, vmax=maximum)
-            #self.ax2.set_xlim(0, self.imageWidth)
-            #self.ax2.set_ylim(0, self.imageHeight)
+            self.ax2.set_xlim(0, len(self.calculatedWavGrid)-1)
+            self.ax2.set_ylim(0, len(self.calculatedWavGrid))
             self.plotSensor_2.canvas.draw()
 
 
@@ -286,8 +283,11 @@ class Window(QMainWindow, Ui_MainWindow):
         self.draw()
 
 
-
-
+    def clickedSpotsFinder(self):
+        if self.checkBoxAutomatic.isChecked():
+            self.findSpotInGridUsingGaussian()
+        else:
+            self.findSpotInGrid()
 
 
     def findSpotInGrid(self):
@@ -300,56 +300,51 @@ class Window(QMainWindow, Ui_MainWindow):
 
         """
         self.relativeShifts = []
-        flagZeros = False
-        flagMultiple = False
-
+        #Die foci guesses als init guess der gaussfunktionen nehmen:
+        globalGuess = self.fociGuess.tolist()
+        flagNoSpot = False
         for cell in self.grid:
             img = self.image
             lowerleft = cell.relToAb((-1,-1)) #unten links
             upperright = cell.relToAb((1,1))#oben rechts
-            #sliecedCell = img[int(lowerleft[0]):int(upperright[0]), int(lowerleft[1]):int(upperright[1])]
-            
-            #xy = peak_local_max(sliecedCell,min_distance = 20, exclude_border = 0, num_peaks=1)
-            xy = self.fociGuess
-            if len(xy) == 1:
-                item = xy[0]
-                abItemX = item[0]# + lowerleft[0]
-                abItemY = item[1]# + lowerleft[1]
-                
-                (relItemX, relItemY) = cell.abToRel((abItemX,abItemY))
+            x0 = 0
+            y0 = 0
+            foundSpot = False
+            for item in globalGuess:
+                if cell.isInside((item[1],item[0])):
+                    x0 = item[1]
+                    y0 = item[0]
+                    print("jipp inside:")
+                    
+                    print((x0,y0))
+                    print("--------")
+                    self.ax1.plot(x0, y0, 'x', color='green')
 
-                self.relativeShifts.append((relItemX, relItemY))
-                self.ax1.plot(abItemX, abItemY, 'o', color='orange', alpha=0.5)
-            elif len(xy) == 0:
-                flagZeros = True
-                self.relativeShifts.append((0, 0))
-            else:
-                item = xy[0]
-                abItemX = item[0] + lowerleft[0]
-                abItemY = item[1] + lowerleft[1]
-                
-                (relItemX, relItemY) = cell.abToRel((abItemX,abItemY))
-
-                self.relativeShifts.append((relItemX, relItemY))
-                self.ax1.plot(abItemX, abItemY, 'o', color='green', alpha=0.7)
-                flagMultiple = True
-
-                
+                    globalGuess.remove(item)
+                    foundSpot = True
+                    break
+            if not foundSpot:
+                flagNoSpot = True
+            (relItemX, relItemY) = cell.abToRel((x0,y0))
+            self.relativeShifts.append((relItemX, relItemY))
+        if len(globalGuess) > 0:
+            for item in globalGuess:
+                self.ax1.plot(item[0], item[1], 'x', color='red')
+            msg = QMessageBox()
+            msg.setIcon(QMessageBox.Critical)
+            msg.setText("Too many Spots Found")
+            msg.setInformativeText('While trying to find a Spot inside a cell multiple were found! Maybe the wavefront is too curved. If this was intended the code will proceed as if the first guess was the best!')
+            msg.setWindowTitle("Error")
+            msg.exec_()
+        if flagNoSpot:
+            msg = QMessageBox()
+            msg.setIcon(QMessageBox.Critical)
+            msg.setText("Cells without Spot!")
+            msg.setInformativeText('While trying to find a Spot inside a cell no Spot was found. This code will behave as if there is no shift present for this cell!')
+            msg.setWindowTitle("Error")
+            msg.exec_()
         self.draw()
-        if flagZeros:
-                msg = QMessageBox()
-                msg.setIcon(QMessageBox.Critical)
-                msg.setText("No Spot Found")
-                msg.setInformativeText('While trying to find a Spot inside a cell nothing was found! Maybe the wavefront is too curved. If this was intended the code will proceed as rel. shift of 0!')
-                msg.setWindowTitle("Error")
-                msg.exec_()
-        if flagMultiple:
-                        msg = QMessageBox()
-                        msg.setIcon(QMessageBox.Critical)
-                        msg.setText("Many Spots Found")
-                        msg.setInformativeText('While trying to find a Spot inside a cell multiple were found! Maybe the wavefront is too curved. If this was intended the code will proceed as if the first guess was the best!')
-                        msg.setWindowTitle("Error")
-                        msg.exec_()
+                        
 
 
 
@@ -397,10 +392,10 @@ class Window(QMainWindow, Ui_MainWindow):
             report = lmfit.fit_report(result.params)
             py = result.params['peak_centerx'].value
             px = result.params['peak_centery'].value
-            print(px)
-            print(py)
+            #print(px)
+            #print(py)
             (relItemX, relItemY) = cell.abToRel((px,py))
-            print(relItemX)
+            #print(relItemX)
             self.relativeShifts.append((relItemX, relItemY))
             self.ax1.contour(x, y, result.best_fit,  colors='black')
             self.draw()
@@ -595,20 +590,21 @@ class Window(QMainWindow, Ui_MainWindow):
 
     def tellMeAboutFoci(self, img):
         
-        xy = peak_local_max(img.reshape(2*self.Camera.radius, 2*self.Camera.radius), min_distance = 20, exclude_border = 0)
-        
+        #yx = peak_local_max(img, min_distance = 20, exclude_border = 0)
+        yx = peak_local_max(img, min_distance = 20, exclude_border = 0, threshold_rel = 0.5)
+
         print("I guessed a grid of size:")
-        print(round(np.sqrt(len(xy))))
-        self.gridGuess = round(np.sqrt(len(xy)))**2
-        self.fociGuess = xy
+        print(round(np.sqrt(len(yx))))
+        self.gridGuess = round(np.sqrt(len(yx)))**2
+        self.fociGuess = yx
         image = img
         self.nFoci = self.gridGuess
         print(self.nFoci)
         self.image = image
-        self.imageHeight = len(image[:,0])
-        self.imageWidth = len(image[0,:])
+        self.imageHeight = len(image[0,:])
+        self.imageWidth = len(image[:,0])
         
-        self.axCali.plot(xy[:,1], xy[:,0], 'x', color='green')
+        self.axCali.plot(yx[:,1], yx[:,0], 'x', color='green')
 
         self.buildGrid(axis = self.axCali)
         self.axCali.set_xlim(0, self.imageWidth-1)
@@ -743,9 +739,9 @@ class Window(QMainWindow, Ui_MainWindow):
         params = Parameters()
         params.add_many(
             ('peak_'+'amplitude', np.amax(image)-1, True, 0, np.amax(image)),
-            ('peak_'+'centerx', x0, True, x0-0.1*y0, x0+0.1*x0),
-            ('peak_'+'centery', y0, True, y0-0.1*y0, y0+0.1*y0),
-            ('peak_'+'sigmax', 2, True, 0, 6))
+            ('peak_'+'centerx', x0, False, x0-0.1*y0, x0+0.1*x0),
+            ('peak_'+'centery', y0, False, y0-0.1*y0, y0+0.1*y0),
+            ('peak_'+'sigmax', 5, True, 0, 6))
             #('peak_'+'sigmay', 0.25, True, 0, 1))
         params.add('peak_sigmay', expr='peak_sigmax')
 
