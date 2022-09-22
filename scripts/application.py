@@ -163,6 +163,13 @@ class Window(QMainWindow, Ui_MainWindow):
         self.btnCaliDisconnect.clicked.connect(self.clickDisconnect)
         self.btnCaliRadius.clicked.connect(self.clickSetRadius)#TODO der kann raus
         
+        #Navigation buttons for ROI
+        self.btnCaliUp.clicked.connect(self.clickROIup)
+        self.btnCaliDown.clicked.connect(self.clickROIdown)
+        self.btnCaliLeft.clicked.connect(self.clickROIleft)
+        self.btnCaliRight.clicked.connect(self.clickROIright)
+        self.sliderCaliRadius.valueChanged.connect(self.RadiusChanged)
+
 
 #Action Functions
 
@@ -314,10 +321,10 @@ class Window(QMainWindow, Ui_MainWindow):
                 if cell.isInside((item[1],item[0])):
                     x0 = item[1]
                     y0 = item[0]
-                    print("jipp inside:")
+                    #print("jipp inside:")
                     
-                    print((x0,y0))
-                    print("--------")
+                   # print((x0,y0))
+                   # print("--------")
                     self.ax1.plot(x0, y0, 'x', color='green')
 
                     globalGuess.remove(item)
@@ -344,6 +351,8 @@ class Window(QMainWindow, Ui_MainWindow):
             msg.setWindowTitle("Error")
             msg.exec_()
         self.draw()
+        if self.checkBoxCorrectTipTilt.isChecked():
+            print("now Im correcting tip and tilt")
                         
 
 
@@ -404,7 +413,9 @@ class Window(QMainWindow, Ui_MainWindow):
     def findSpotInGrid_singleCell(self):
         """
         Finds all spots for all cells, looks only for spots inside of each cell
-
+        This function is currently unused due to its inaccurate nature.
+        
+        The min max search for the whole ROI is somewhat equally fast but more percise.
         Returns
         -------
         None.
@@ -544,9 +555,16 @@ class Window(QMainWindow, Ui_MainWindow):
         
         
         return super().eventFilter(source, event)
+    
+    
+    
+    
+    
+    
+    
 #---------------------------------------------------------------------
 #---------------------------------------------------------------------
-#--------------------------CAMERA Calibration-----------------------------------
+#--------------------------CAMERA Calibration-------------------------
 #---------------------------------------------------------------------
 #---------------------------------------------------------------------
 
@@ -561,6 +579,7 @@ class Window(QMainWindow, Ui_MainWindow):
             self.axCali.set_xlim(0, len(self.deepCopyImg[0,:])-1)
             self.axCali.set_ylim(0,len(self.deepCopyImg[:,0])-1)
             self.draw()
+            
     def clickConnect(self):
         if self.Camera.connectCamera():
             self.connected = True
@@ -614,16 +633,71 @@ class Window(QMainWindow, Ui_MainWindow):
 
 
 
+#---------------------------------------------------------------------
+#---------------------------------------------------------------------
+#--------------------------Navigation Buttons-------------------------
+#---------------------------------------------------------------------
+#---------------------------------------------------------------------
+
+    def clickROIup(self):
+        self.axCali.cla()
+        
+        (centerX, centerY) = self.Camera.center
+        self.Camera.center = (centerX, centerY-1)
+        
+        cutImg = self.Camera.cutImageToAreaOfInterest(self.deepCopyImg)
+        self.axCali.imshow(cutImg, cmap = self.colormap)
+        self.cutImg = cutImg
+        self.tellMeAboutFoci(cutImg)
+        self.draw()
+
+    def clickROIdown(self):
+        self.axCali.cla()
+        
+        (centerX, centerY) = self.Camera.center
+        self.Camera.center = (centerX, centerY+1)
+        
+        cutImg = self.Camera.cutImageToAreaOfInterest(self.deepCopyImg)
+        self.axCali.imshow(cutImg, cmap = self.colormap)
+        self.cutImg = cutImg
+        self.tellMeAboutFoci(cutImg)
+        self.draw()   
+        
+        
+    def clickROIleft(self):
+        self.axCali.cla()
+        
+        (centerX, centerY) = self.Camera.center
+        self.Camera.center = (centerX+1, centerY)
+        
+        cutImg = self.Camera.cutImageToAreaOfInterest(self.deepCopyImg)
+        self.axCali.imshow(cutImg, cmap = self.colormap)
+        self.cutImg = cutImg
+        self.tellMeAboutFoci(cutImg)
+        self.draw()
 
 
+    def clickROIright(self):
+        self.axCali.cla()
+        
+        (centerX, centerY) = self.Camera.center
+        self.Camera.center = (centerX-1, centerY)
+        
+        cutImg = self.Camera.cutImageToAreaOfInterest(self.deepCopyImg)
+        self.axCali.imshow(cutImg, cmap = self.colormap)
+        self.cutImg = cutImg
+        self.tellMeAboutFoci(cutImg)
+        self.draw()
 
-
-
-
-
-
-
-
+    def RadiusChanged(self):
+        self.axCali.cla()
+        radius = self.sliderCaliRadius.value()
+        self.Camera.radius = radius
+        cutImg = self.Camera.cutImageToAreaOfInterest(self.deepCopyImg)
+        self.axCali.imshow(cutImg, cmap = self.colormap)
+        self.cutImg = cutImg
+        self.tellMeAboutFoci(cutImg)
+        self.draw()
 
 #---------------------------------------------------------------------
 #---------------------------------------------------------------------

@@ -57,6 +57,8 @@ class Camera:
     def cutImageToAreaOfInterest(self, img):
         x = self.center[0]
         y = self.center[1]
-        reshaped = img.reshape(self.width,self.height)
-        cutImg = img[ y-self.radius: y+self.radius, x-self.radius : x + self.radius]
+        #reshaped = img.reshape(self.width,self.height)
+        cutImg = img[y-self.radius: y+self.radius, x-self.radius : x + self.radius]
+        #das macht dass das Bild zurecht geschnitten wird. xy sind hierbei die pixel nummern
+        #also center minus radius ist y rand bis y + radius und das geleiche fuer x
         return cutImg

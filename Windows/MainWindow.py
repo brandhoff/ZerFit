@@ -18,6 +18,98 @@ class Ui_MainWindow(object):
         self.tabWidget = QtWidgets.QTabWidget(self.centralwidget)
         self.tabWidget.setGeometry(QtCore.QRect(0, 0, 1131, 681))
         self.tabWidget.setObjectName("tabWidget")
+        self.tab = QtWidgets.QWidget()
+        self.tab.setObjectName("tab")
+        self.plotSensor_3 = MplWidget(self.tab)
+        self.plotSensor_3.setGeometry(QtCore.QRect(20, 20, 500, 500))
+        self.plotSensor_3.setObjectName("plotSensor_3")
+        self.btnCaliConnect = QtWidgets.QPushButton(self.tab)
+        self.btnCaliConnect.setGeometry(QtCore.QRect(770, 0, 171, 61))
+        self.btnCaliConnect.setStyleSheet("color: #fff;\n"
+"background-color: #337ab7;\n"
+"border-color: #2e6da4;\n"
+"background-image: none;\n"
+"border: 1px solid transparent;\n"
+"border-radius: 4px;")
+        self.btnCaliConnect.setObjectName("btnCaliConnect")
+        self.btnCaliDisconnect = QtWidgets.QPushButton(self.tab)
+        self.btnCaliDisconnect.setGeometry(QtCore.QRect(950, 0, 171, 61))
+        self.btnCaliDisconnect.setStyleSheet("color: #fff;\n"
+"background-color: #337ab7;\n"
+"border-color: #2e6da4;\n"
+"background-image: none;\n"
+"border: 1px solid transparent;\n"
+"border-radius: 4px;")
+        self.btnCaliDisconnect.setObjectName("btnCaliDisconnect")
+        self.btnCaliConnect_2 = QtWidgets.QPushButton(self.tab)
+        self.btnCaliConnect_2.setGeometry(QtCore.QRect(20, 530, 171, 61))
+        self.btnCaliConnect_2.setStyleSheet("color: #fff;\n"
+"background-color: #337ab7;\n"
+"border-color: #2e6da4;\n"
+"background-image: none;\n"
+"border: 1px solid transparent;\n"
+"border-radius: 4px;")
+        self.btnCaliConnect_2.setObjectName("btnCaliConnect_2")
+        self.sliderCaliRadius = QtWidgets.QSlider(self.tab)
+        self.sliderCaliRadius.setGeometry(QtCore.QRect(530, 520, 271, 22))
+        self.sliderCaliRadius.setProperty("value", 50)
+        self.sliderCaliRadius.setOrientation(QtCore.Qt.Horizontal)
+        self.sliderCaliRadius.setObjectName("sliderCaliRadius")
+        self.btnCaliRadius = QtWidgets.QPushButton(self.tab)
+        self.btnCaliRadius.setGeometry(QtCore.QRect(580, 560, 171, 61))
+        self.btnCaliRadius.setStyleSheet("color: #fff;\n"
+"background-color: #337ab7;\n"
+"border-color: #2e6da4;\n"
+"background-image: none;\n"
+"border: 1px solid transparent;\n"
+"border-radius: 4px;")
+        self.btnCaliRadius.setObjectName("btnCaliRadius")
+        self.btnCaliUp = QtWidgets.QPushButton(self.tab)
+        self.btnCaliUp.setGeometry(QtCore.QRect(640, 360, 51, 51))
+        self.btnCaliUp.setStyleSheet("color: #fff;\n"
+"background-color: #337ab7;\n"
+"border-color: #2e6da4;\n"
+"background-image: none;\n"
+"border: 1px solid transparent;\n"
+"border-radius: 4px;")
+        self.btnCaliUp.setObjectName("btnCaliUp")
+        self.btnCaliRight = QtWidgets.QPushButton(self.tab)
+        self.btnCaliRight.setGeometry(QtCore.QRect(690, 410, 51, 51))
+        self.btnCaliRight.setStyleSheet("color: #fff;\n"
+"background-color: #337ab7;\n"
+"border-color: #2e6da4;\n"
+"background-image: none;\n"
+"border: 1px solid transparent;\n"
+"border-radius: 4px;")
+        self.btnCaliRight.setObjectName("btnCaliRight")
+        self.btnCaliLeft = QtWidgets.QPushButton(self.tab)
+        self.btnCaliLeft.setGeometry(QtCore.QRect(590, 410, 51, 51))
+        self.btnCaliLeft.setStyleSheet("color: #fff;\n"
+"background-color: #337ab7;\n"
+"border-color: #2e6da4;\n"
+"background-image: none;\n"
+"border: 1px solid transparent;\n"
+"border-radius: 4px;")
+        self.btnCaliLeft.setObjectName("btnCaliLeft")
+        self.btnCaliDown = QtWidgets.QPushButton(self.tab)
+        self.btnCaliDown.setGeometry(QtCore.QRect(640, 460, 51, 51))
+        self.btnCaliDown.setStyleSheet("color: #fff;\n"
+"background-color: #337ab7;\n"
+"border-color: #2e6da4;\n"
+"background-image: none;\n"
+"border: 1px solid transparent;\n"
+"border-radius: 4px;")
+        self.btnCaliDown.setObjectName("btnCaliDown")
+        self.btnCaliGridFix = QtWidgets.QPushButton(self.tab)
+        self.btnCaliGridFix.setGeometry(QtCore.QRect(760, 560, 171, 61))
+        self.btnCaliGridFix.setStyleSheet("color: #fff;\n"
+"background-color: #337ab7;\n"
+"border-color: #2e6da4;\n"
+"background-image: none;\n"
+"border: 1px solid transparent;\n"
+"border-radius: 4px;")
+        self.btnCaliGridFix.setObjectName("btnCaliGridFix")
+        self.tabWidget.addTab(self.tab, "")
         self.tabMain = QtWidgets.QWidget()
         self.tabMain.setObjectName("tabMain")
         self.plotSensor = MplWidget(self.tabMain)
@@ -95,8 +187,11 @@ class Ui_MainWindow(object):
 "border-radius: 4px;")
         self.btnFindSpots.setObjectName("btnFindSpots")
         self.checkBoxAutomatic = QtWidgets.QCheckBox(self.tabMain)
-        self.checkBoxAutomatic.setGeometry(QtCore.QRect(10, 620, 111, 21))
+        self.checkBoxAutomatic.setGeometry(QtCore.QRect(380, 610, 141, 21))
         self.checkBoxAutomatic.setObjectName("checkBoxAutomatic")
+        self.checkBoxCorrectTipTilt = QtWidgets.QCheckBox(self.tabMain)
+        self.checkBoxCorrectTipTilt.setGeometry(QtCore.QRect(380, 630, 141, 21))
+        self.checkBoxCorrectTipTilt.setObjectName("checkBoxCorrectTipTilt")
         self.tabWidget.addTab(self.tabMain, "")
         self.tabCalibration = QtWidgets.QWidget()
         self.tabCalibration.setObjectName("tabCalibration")
@@ -144,53 +239,6 @@ class Ui_MainWindow(object):
         self.sliderAnalyse.setOrientation(QtCore.Qt.Horizontal)
         self.sliderAnalyse.setObjectName("sliderAnalyse")
         self.tabWidget.addTab(self.tabCalibration, "")
-        self.tab = QtWidgets.QWidget()
-        self.tab.setObjectName("tab")
-        self.plotSensor_3 = MplWidget(self.tab)
-        self.plotSensor_3.setGeometry(QtCore.QRect(20, 20, 500, 500))
-        self.plotSensor_3.setObjectName("plotSensor_3")
-        self.btnCaliConnect = QtWidgets.QPushButton(self.tab)
-        self.btnCaliConnect.setGeometry(QtCore.QRect(770, 0, 171, 61))
-        self.btnCaliConnect.setStyleSheet("color: #fff;\n"
-"background-color: #337ab7;\n"
-"border-color: #2e6da4;\n"
-"background-image: none;\n"
-"border: 1px solid transparent;\n"
-"border-radius: 4px;")
-        self.btnCaliConnect.setObjectName("btnCaliConnect")
-        self.btnCaliDisconnect = QtWidgets.QPushButton(self.tab)
-        self.btnCaliDisconnect.setGeometry(QtCore.QRect(950, 0, 171, 61))
-        self.btnCaliDisconnect.setStyleSheet("color: #fff;\n"
-"background-color: #337ab7;\n"
-"border-color: #2e6da4;\n"
-"background-image: none;\n"
-"border: 1px solid transparent;\n"
-"border-radius: 4px;")
-        self.btnCaliDisconnect.setObjectName("btnCaliDisconnect")
-        self.btnCaliConnect_2 = QtWidgets.QPushButton(self.tab)
-        self.btnCaliConnect_2.setGeometry(QtCore.QRect(20, 530, 171, 61))
-        self.btnCaliConnect_2.setStyleSheet("color: #fff;\n"
-"background-color: #337ab7;\n"
-"border-color: #2e6da4;\n"
-"background-image: none;\n"
-"border: 1px solid transparent;\n"
-"border-radius: 4px;")
-        self.btnCaliConnect_2.setObjectName("btnCaliConnect_2")
-        self.sliderCaliRadius = QtWidgets.QSlider(self.tab)
-        self.sliderCaliRadius.setGeometry(QtCore.QRect(560, 500, 271, 22))
-        self.sliderCaliRadius.setProperty("value", 50)
-        self.sliderCaliRadius.setOrientation(QtCore.Qt.Horizontal)
-        self.sliderCaliRadius.setObjectName("sliderCaliRadius")
-        self.btnCaliRadius = QtWidgets.QPushButton(self.tab)
-        self.btnCaliRadius.setGeometry(QtCore.QRect(610, 540, 171, 61))
-        self.btnCaliRadius.setStyleSheet("color: #fff;\n"
-"background-color: #337ab7;\n"
-"border-color: #2e6da4;\n"
-"background-image: none;\n"
-"border: 1px solid transparent;\n"
-"border-radius: 4px;")
-        self.btnCaliRadius.setObjectName("btnCaliRadius")
-        self.tabWidget.addTab(self.tab, "")
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
         self.menubar.setGeometry(QtCore.QRect(0, 0, 1137, 21))
@@ -207,24 +255,30 @@ class Ui_MainWindow(object):
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "ZerFit"))
-        self.btnTakeImage.setText(_translate("MainWindow", "Take Image"))
+        self.btnCaliConnect.setText(_translate("MainWindow", "Connect"))
+        self.btnCaliDisconnect.setText(_translate("MainWindow", "Disconnect"))
+        self.btnCaliConnect_2.setText(_translate("MainWindow", "Take Image"))
+        self.btnCaliRadius.setText(_translate("MainWindow", "Set ROI"))
+        self.btnCaliUp.setText(_translate("MainWindow", "^"))
+        self.btnCaliRight.setText(_translate("MainWindow", ">"))
+        self.btnCaliLeft.setText(_translate("MainWindow", "<"))
+        self.btnCaliDown.setText(_translate("MainWindow", "v"))
+        self.btnCaliGridFix.setText(_translate("MainWindow", "Fix my Grid"))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab), _translate("MainWindow", "Camera"))
+        self.btnTakeImage.setText(_translate("MainWindow", "Insert Taken Image"))
         self.btnShow.setText(_translate("MainWindow", "Reconstruct Wavefront"))
         self.btnSavePDF.setText(_translate("MainWindow", "Save PDF"))
         self.btnSave_2.setText(_translate("MainWindow", "Save TXT"))
         self.label_2.setText(_translate("MainWindow", "Order"))
         self.btnCreateGrid.setText(_translate("MainWindow", "Create Grid"))
         self.btnFindSpots.setText(_translate("MainWindow", "Find Spots"))
-        self.checkBoxAutomatic.setText(_translate("MainWindow", "Automatic "))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tabMain), _translate("MainWindow", "Main"))
+        self.checkBoxAutomatic.setText(_translate("MainWindow", "Fit 2D Gaussian (slow!)"))
+        self.checkBoxCorrectTipTilt.setText(_translate("MainWindow", "Auto-Correct Tip Tilt"))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tabMain), _translate("MainWindow", "Fit Zernike"))
         self.btnPlotZernike.setText(_translate("MainWindow", "Plot Zernike"))
         self.label.setText(_translate("MainWindow", "Number of Foci"))
         self.btnFindSpotsCali.setText(_translate("MainWindow", "Open Exported TXT"))
         self.label_3.setText(_translate("MainWindow", "Degree"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tabCalibration), _translate("MainWindow", "Analyse"))
-        self.btnCaliConnect.setText(_translate("MainWindow", "Connect"))
-        self.btnCaliDisconnect.setText(_translate("MainWindow", "Disconnect"))
-        self.btnCaliConnect_2.setText(_translate("MainWindow", "Take Image"))
-        self.btnCaliRadius.setText(_translate("MainWindow", "Set Radius"))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab), _translate("MainWindow", "Camera"))
 
 from mplwidget import MplWidget

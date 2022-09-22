@@ -27,11 +27,231 @@
      </rect>
     </property>
     <property name="currentIndex">
-     <number>2</number>
+     <number>0</number>
     </property>
+    <widget class="QWidget" name="tab">
+     <attribute name="title">
+      <string>Camera</string>
+     </attribute>
+     <widget class="MplWidget" name="plotSensor_3" native="true">
+      <property name="geometry">
+       <rect>
+        <x>20</x>
+        <y>20</y>
+        <width>500</width>
+        <height>500</height>
+       </rect>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="btnCaliConnect">
+      <property name="geometry">
+       <rect>
+        <x>770</x>
+        <y>0</y>
+        <width>171</width>
+        <height>61</height>
+       </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">color: #fff;
+background-color: #337ab7;
+border-color: #2e6da4;
+background-image: none;
+border: 1px solid transparent;
+border-radius: 4px;</string>
+      </property>
+      <property name="text">
+       <string>Connect</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="btnCaliDisconnect">
+      <property name="geometry">
+       <rect>
+        <x>950</x>
+        <y>0</y>
+        <width>171</width>
+        <height>61</height>
+       </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">color: #fff;
+background-color: #337ab7;
+border-color: #2e6da4;
+background-image: none;
+border: 1px solid transparent;
+border-radius: 4px;</string>
+      </property>
+      <property name="text">
+       <string>Disconnect</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="btnCaliConnect_2">
+      <property name="geometry">
+       <rect>
+        <x>20</x>
+        <y>530</y>
+        <width>171</width>
+        <height>61</height>
+       </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">color: #fff;
+background-color: #337ab7;
+border-color: #2e6da4;
+background-image: none;
+border: 1px solid transparent;
+border-radius: 4px;</string>
+      </property>
+      <property name="text">
+       <string>Take Image</string>
+      </property>
+     </widget>
+     <widget class="QSlider" name="sliderCaliRadius">
+      <property name="geometry">
+       <rect>
+        <x>530</x>
+        <y>520</y>
+        <width>271</width>
+        <height>22</height>
+       </rect>
+      </property>
+      <property name="value">
+       <number>50</number>
+      </property>
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="btnCaliRadius">
+      <property name="geometry">
+       <rect>
+        <x>580</x>
+        <y>560</y>
+        <width>171</width>
+        <height>61</height>
+       </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">color: #fff;
+background-color: #337ab7;
+border-color: #2e6da4;
+background-image: none;
+border: 1px solid transparent;
+border-radius: 4px;</string>
+      </property>
+      <property name="text">
+       <string>Set ROI</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="btnCaliUp">
+      <property name="geometry">
+       <rect>
+        <x>640</x>
+        <y>360</y>
+        <width>51</width>
+        <height>51</height>
+       </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">color: #fff;
+background-color: #337ab7;
+border-color: #2e6da4;
+background-image: none;
+border: 1px solid transparent;
+border-radius: 4px;</string>
+      </property>
+      <property name="text">
+       <string>^</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="btnCaliRight">
+      <property name="geometry">
+       <rect>
+        <x>690</x>
+        <y>410</y>
+        <width>51</width>
+        <height>51</height>
+       </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">color: #fff;
+background-color: #337ab7;
+border-color: #2e6da4;
+background-image: none;
+border: 1px solid transparent;
+border-radius: 4px;</string>
+      </property>
+      <property name="text">
+       <string>&gt;</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="btnCaliLeft">
+      <property name="geometry">
+       <rect>
+        <x>590</x>
+        <y>410</y>
+        <width>51</width>
+        <height>51</height>
+       </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">color: #fff;
+background-color: #337ab7;
+border-color: #2e6da4;
+background-image: none;
+border: 1px solid transparent;
+border-radius: 4px;</string>
+      </property>
+      <property name="text">
+       <string>&lt;</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="btnCaliDown">
+      <property name="geometry">
+       <rect>
+        <x>640</x>
+        <y>460</y>
+        <width>51</width>
+        <height>51</height>
+       </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">color: #fff;
+background-color: #337ab7;
+border-color: #2e6da4;
+background-image: none;
+border: 1px solid transparent;
+border-radius: 4px;</string>
+      </property>
+      <property name="text">
+       <string>v</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="btnCaliGridFix">
+      <property name="geometry">
+       <rect>
+        <x>760</x>
+        <y>560</y>
+        <width>171</width>
+        <height>61</height>
+       </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">color: #fff;
+background-color: #337ab7;
+border-color: #2e6da4;
+background-image: none;
+border: 1px solid transparent;
+border-radius: 4px;</string>
+      </property>
+      <property name="text">
+       <string>Fix my Grid</string>
+      </property>
+     </widget>
+    </widget>
     <widget class="QWidget" name="tabMain">
      <attribute name="title">
-      <string>Main</string>
+      <string>Fit Zernike</string>
      </attribute>
      <widget class="MplWidget" name="plotSensor" native="true">
       <property name="geometry">
@@ -61,7 +281,7 @@ border: 1px solid transparent;
 border-radius: 4px;</string>
       </property>
       <property name="text">
-       <string>Take Image</string>
+       <string>Insert Taken Image</string>
       </property>
      </widget>
      <widget class="MplWidget" name="plotSensor_2" native="true">
@@ -230,14 +450,27 @@ border-radius: 4px;</string>
      <widget class="QCheckBox" name="checkBoxAutomatic">
       <property name="geometry">
        <rect>
-        <x>10</x>
-        <y>620</y>
-        <width>111</width>
+        <x>380</x>
+        <y>610</y>
+        <width>141</width>
         <height>21</height>
        </rect>
       </property>
       <property name="text">
-       <string>Automatic </string>
+       <string>Fit 2D Gaussian (slow!)</string>
+      </property>
+     </widget>
+     <widget class="QCheckBox" name="checkBoxCorrectTipTilt">
+      <property name="geometry">
+       <rect>
+        <x>380</x>
+        <y>630</y>
+        <width>141</width>
+        <height>21</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Auto-Correct Tip Tilt</string>
       </property>
      </widget>
     </widget>
@@ -368,142 +601,6 @@ border-radius: 4px;</string>
       </property>
       <property name="orientation">
        <enum>Qt::Horizontal</enum>
-      </property>
-     </widget>
-    </widget>
-    <widget class="QWidget" name="tab">
-     <attribute name="title">
-      <string>Camera</string>
-     </attribute>
-     <widget class="MplWidget" name="plotSensor_3" native="true">
-      <property name="geometry">
-       <rect>
-        <x>20</x>
-        <y>20</y>
-        <width>500</width>
-        <height>500</height>
-       </rect>
-      </property>
-     </widget>
-     <widget class="QPushButton" name="btnCaliConnect">
-      <property name="geometry">
-       <rect>
-        <x>770</x>
-        <y>0</y>
-        <width>171</width>
-        <height>61</height>
-       </rect>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">color: #fff;
-background-color: #337ab7;
-border-color: #2e6da4;
-background-image: none;
-border: 1px solid transparent;
-border-radius: 4px;</string>
-      </property>
-      <property name="text">
-       <string>Connect</string>
-      </property>
-     </widget>
-     <widget class="QPushButton" name="btnCaliDisconnect">
-      <property name="geometry">
-       <rect>
-        <x>950</x>
-        <y>0</y>
-        <width>171</width>
-        <height>61</height>
-       </rect>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">color: #fff;
-background-color: #337ab7;
-border-color: #2e6da4;
-background-image: none;
-border: 1px solid transparent;
-border-radius: 4px;</string>
-      </property>
-      <property name="text">
-       <string>Disconnect</string>
-      </property>
-     </widget>
-     <widget class="QPushButton" name="btnCaliConnect_2">
-      <property name="geometry">
-       <rect>
-        <x>20</x>
-        <y>530</y>
-        <width>171</width>
-        <height>61</height>
-       </rect>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">color: #fff;
-background-color: #337ab7;
-border-color: #2e6da4;
-background-image: none;
-border: 1px solid transparent;
-border-radius: 4px;</string>
-      </property>
-      <property name="text">
-       <string>Take Image</string>
-      </property>
-     </widget>
-     <widget class="QSlider" name="sliderCaliRadius">
-      <property name="geometry">
-       <rect>
-        <x>200</x>
-        <y>530</y>
-        <width>271</width>
-        <height>22</height>
-       </rect>
-      </property>
-      <property name="value">
-       <number>50</number>
-      </property>
-      <property name="orientation">
-       <enum>Qt::Horizontal</enum>
-      </property>
-     </widget>
-     <widget class="QPushButton" name="btnCaliRadius">
-      <property name="geometry">
-       <rect>
-        <x>220</x>
-        <y>580</y>
-        <width>171</width>
-        <height>61</height>
-       </rect>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">color: #fff;
-background-color: #337ab7;
-border-color: #2e6da4;
-background-image: none;
-border: 1px solid transparent;
-border-radius: 4px;</string>
-      </property>
-      <property name="text">
-       <string>Set Radius</string>
-      </property>
-     </widget>
-     <widget class="QPushButton" name="btnCaliRadius_2">
-      <property name="geometry">
-       <rect>
-        <x>570</x>
-        <y>260</y>
-        <width>171</width>
-        <height>61</height>
-       </rect>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">color: #fff;
-background-color: #337ab7;
-border-color: #2e6da4;
-background-image: none;
-border: 1px solid transparent;
-border-radius: 4px;</string>
-      </property>
-      <property name="text">
-       <string>Set Radius</string>
       </property>
      </widget>
     </widget>
