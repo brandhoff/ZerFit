@@ -163,6 +163,9 @@ class Window(QMainWindow, Ui_MainWindow):
         self.btnCaliDisconnect.clicked.connect(self.clickDisconnect)
         self.btnCaliRadius.clicked.connect(self.clickSetRadius)#TODO der kann raus
         
+        self.btnCaliGridFix.clicked.connect(self.fixGrid)
+        
+        
         #Navigation buttons for ROI
         self.btnCaliUp.clicked.connect(self.clickROIup)
         self.btnCaliDown.clicked.connect(self.clickROIdown)
@@ -353,8 +356,23 @@ class Window(QMainWindow, Ui_MainWindow):
         self.draw()
         if self.checkBoxCorrectTipTilt.isChecked():
             print("now Im correcting tip and tilt")
-                        
-
+            flagCorrectX = True
+            flagCorrectY = True
+            meanX = np.mean((self.relativeShifts[:])[0])
+            meanY = np.mean((self.relativeShifts[:])[1])
+            for relShift in self.relativeShifts:
+                if relShift[0] * meanX < 0:
+                    flagCorrectX = False
+                if relShift[1] * meanY < 0:
+                    flagCorrectY = False
+                    
+            #self.relativeShifts = self.relativeShifts - (meanX, meanY)
+            if flagCorrectX or flagCorrectY:
+                for i, relShift in enumerate(self.relativeShifts):
+                    if flagCorrectX:
+                       self.relativeShifts[i] = ((self.relativeShifts[i])[0] -meanX,(self.relativeShifts[i])[1])
+                    if flagCorrectY:
+                       self.relativeShifts[i] = ((self.relativeShifts[i])[0],(self.relativeShifts[i])[1] -meanY)
 
 
 
@@ -629,7 +647,8 @@ class Window(QMainWindow, Ui_MainWindow):
         self.axCali.set_xlim(0, self.imageWidth-1)
         self.axCali.set_ylim(0,self.imageHeight-1)
 
-
+    def fixGrid(self):
+        print("yo du denkst doch nicht dass das eine gut idee ist oder ;)")
 
 
 
@@ -690,14 +709,15 @@ class Window(QMainWindow, Ui_MainWindow):
         self.draw()
 
     def RadiusChanged(self):
-        self.axCali.cla()
-        radius = self.sliderCaliRadius.value()
-        self.Camera.radius = radius
-        cutImg = self.Camera.cutImageToAreaOfInterest(self.deepCopyImg)
-        self.axCali.imshow(cutImg, cmap = self.colormap)
-        self.cutImg = cutImg
-        self.tellMeAboutFoci(cutImg)
-        self.draw()
+        if int(self.axCali.get_ylim()[1]) == len(self.cutImg[0,:])-1:
+            self.axCali.cla()
+            radius = self.sliderCaliRadius.value()
+            self.Camera.radius = radius
+            cutImg = self.Camera.cutImageToAreaOfInterest(self.deepCopyImg)
+            self.axCali.imshow(cutImg, cmap = self.colormap)
+            self.cutImg = cutImg
+            self.tellMeAboutFoci(cutImg)
+            self.draw()
 
 #---------------------------------------------------------------------
 #---------------------------------------------------------------------
