@@ -39,7 +39,7 @@ from collections import OrderedDict
 import fitFunctions as FF
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
-from lmfit.models import Gaussian2dModel
+from lmfit.models import Gaussian2dModel,ConstantModel
 from lmfit import Model, Parameters
 import Grid
 import CameraCalibration
@@ -381,9 +381,6 @@ class Window(QMainWindow, Ui_MainWindow):
 
 
 
-
-
-
     def findSpotInGridUsingGaussian(self):
         """
         Trys to Fit a 2D Gaussian for each build cell
@@ -394,38 +391,62 @@ class Window(QMainWindow, Ui_MainWindow):
 
         """
         self.relativeShifts = []
+        lastSigma = 0
+        lastAmpl = 0
         for cell in self.grid:
             img = self.image
             lowerleft = cell.relToAb((-1,-1)) #unten links
             upperright = cell.relToAb((1,1))#oben rechts
             sliecedCell = img[int(lowerleft[0]):int(upperright[0]), int(lowerleft[1]):int(upperright[1])]
-              
+            
             #Die foci guesses als init guess der gaussfunktionen nehmen:
             globalGuess = self.fociGuess
             x0 = 0
             y0 = 0
             for item in globalGuess:
                 self.ax1.plot(item[1], item[0], 'x', color='green')
-                if cell.isInside(item):
+                if cell.isInside((item[1],item[0])):
                     x0 = item[1]
                     y0 = item[0]
                     break
-                    #print("jup inside :D")
-           # 
-            result, mesh = self.fitLM2DGaussian(img, x0 = x0, y0 = y0)
+            #x0-lowerleft[1]
+            #y0-lowerleft[0]
+            result, mesh = self.fitLM2DGaussian(sliecedCell, x0 = x0, y0 = y0, ampl = lastAmpl, sigma = lastSigma, lowerleft = lowerleft)
             
-            x = mesh[0]
-            y = mesh[1]
-            report = lmfit.fit_report(result.params)
-            py = result.params['peak_centerx'].value
-            px = result.params['peak_centery'].value
-            #print(px)
-            #print(py)
+            x = mesh[0]#+lowerleft[1]
+            y = mesh[1]#+lowerleft[0]
+            #report = lmfit.fit_report(result.params)
+            px = result.params['peak_centerx'].value
+            py = result.params['peak_centery'].value
+            #print(lowerleft)
+            
+            #print(x)
+            #print(y)
+            #px = px
+            #py = py
+
+            lastSigma = result.params['peak_sigmax'].value
+            lastAmpl = result.params['peak_amplitude'].value
+            
+            print("-------------")
+            print("sigma:")
+            print(lastSigma)
+            print("-------------")
+
+            print("ampl")
+            print(lastAmpl)
+            print("-------------")
+            
             (relItemX, relItemY) = cell.abToRel((px,py))
-            #print(relItemX)
             self.relativeShifts.append((relItemX, relItemY))
             self.ax1.contour(x, y, result.best_fit,  colors='black')
+            #self.ax1.contour(x, y, result.best_fit,[0.5,1,1.5,2],  colors='black')
+
             self.draw()
+
+
+
+
 
 
     def findSpotInGrid_singleCell(self):
@@ -796,7 +817,7 @@ class Window(QMainWindow, Ui_MainWindow):
         mesh = (x, y)
         return data_fitted, mesh
 
-    def fitLM2DGaussian(self, image,x0 = 0,y0=0, ampl=100, threshHold = 10):
+    def fitLM2DGaussian(self, image, x0 = 0, y0=0, ampl=0, sigma = 0, lowerleft = (0,0)):
         """
         this function utilieses the LMFit libary for a percise fit
         
@@ -819,31 +840,36 @@ class Window(QMainWindow, Ui_MainWindow):
         None.
 
         """
+         
+        img = image
+        img[img < 0.1*np.max(image)] = 0
+        img = np.matrix.round(img)
         
-        
-        
-        x1 = np.linspace(0, len(image[:,0]), len(image[:,0]))
-        y1 = np.linspace(0, len(image[0,:]), len(image[0,:]))
-        #print(x1)
+        x1 = np.linspace(lowerleft[0], lowerleft[0]+len(image[:,0]), len(image[:,0]))
+        y1 = np.linspace(lowerleft[1], lowerleft[1]+len(image[0,:]), len(image[0,:]))
         x, y = np.meshgrid(x1, y1)
 
-        #x0 = max(x1) / 2
-        #y0 = max(y1) / 2
+        
         fit_model = Gaussian2dModel(prefix='peak_')
-        params = Parameters()
+        params = fit_model.guess(img, x.flatten(), y.flatten())
+       
+      
+        
         params.add_many(
-            ('peak_'+'amplitude', np.amax(image)-1, True, 0, np.amax(image)),
-            ('peak_'+'centerx', x0, False, x0-0.1*y0, x0+0.1*x0),
-            ('peak_'+'centery', y0, False, y0-0.1*y0, y0+0.1*y0),
-            ('peak_'+'sigmax', 5, True, 0, 6))
-            #('peak_'+'sigmay', 0.25, True, 0, 1))
-        params.add('peak_sigmay', expr='peak_sigmax')
+            #('peak_'+'amplitude', np.max(img)*2, True, 0, np.max(img)*3),
+            ('peak_'+'centerx', x0, True, x0-0.05*y0, x0+0.05*x0),
+            ('peak_'+'centery', y0, True, y0-0.05*y0, y0+0.05*y0))
+            #('peak_'+'sigmax', 14.49049, True, 0, 15))
+       # params.add('peak_sigmay', expr='peak_sigmax')
+       # if sigma > 0: 
+       #     params.add('peak_sigmax', sigma, True, min = sigma - 0.1*sigma, max = sigma+ 0.1*sigma)
+       # if ampl >0:
+       #     params.add('peak_amplitude', ampl, True, ampl- 0.1*ampl,  np.max(img))
 
-        result = fit_model.fit(image, params, x=x, y=y)
-        #print(result)
+
+        result = fit_model.fit(img, params, x=x, y=y)
         mesh = (x,y)
         return result, mesh
-        #self.ax1.contour(x, y, result.best_fit, 3, colors='w')
 
 
 
