@@ -11,12 +11,12 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(1137, 746)
+        MainWindow.resize(1137, 756)
         MainWindow.setStyleSheet("background-color: #FFF")
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
         self.tabWidget = QtWidgets.QTabWidget(self.centralwidget)
-        self.tabWidget.setGeometry(QtCore.QRect(0, 0, 1131, 681))
+        self.tabWidget.setGeometry(QtCore.QRect(0, 0, 1131, 711))
         self.tabWidget.setObjectName("tabWidget")
         self.tab = QtWidgets.QWidget()
         self.tab.setObjectName("tab")
@@ -42,7 +42,7 @@ class Ui_MainWindow(object):
 "border-radius: 4px;")
         self.btnCaliDisconnect.setObjectName("btnCaliDisconnect")
         self.btnCaliConnect_2 = QtWidgets.QPushButton(self.tab)
-        self.btnCaliConnect_2.setGeometry(QtCore.QRect(20, 530, 171, 61))
+        self.btnCaliConnect_2.setGeometry(QtCore.QRect(20, 520, 171, 61))
         self.btnCaliConnect_2.setStyleSheet("color: #fff;\n"
 "background-color: #337ab7;\n"
 "border-color: #2e6da4;\n"
@@ -56,7 +56,7 @@ class Ui_MainWindow(object):
         self.sliderCaliRadius.setOrientation(QtCore.Qt.Horizontal)
         self.sliderCaliRadius.setObjectName("sliderCaliRadius")
         self.btnCaliRadius = QtWidgets.QPushButton(self.tab)
-        self.btnCaliRadius.setGeometry(QtCore.QRect(580, 560, 171, 61))
+        self.btnCaliRadius.setGeometry(QtCore.QRect(530, 590, 171, 61))
         self.btnCaliRadius.setStyleSheet("color: #fff;\n"
 "background-color: #337ab7;\n"
 "border-color: #2e6da4;\n"
@@ -101,7 +101,7 @@ class Ui_MainWindow(object):
 "border-radius: 4px;")
         self.btnCaliDown.setObjectName("btnCaliDown")
         self.btnCaliGridFix = QtWidgets.QPushButton(self.tab)
-        self.btnCaliGridFix.setGeometry(QtCore.QRect(760, 560, 171, 61))
+        self.btnCaliGridFix.setGeometry(QtCore.QRect(720, 590, 171, 61))
         self.btnCaliGridFix.setStyleSheet("color: #fff;\n"
 "background-color: #337ab7;\n"
 "border-color: #2e6da4;\n"
@@ -109,6 +109,34 @@ class Ui_MainWindow(object):
 "border: 1px solid transparent;\n"
 "border-radius: 4px;")
         self.btnCaliGridFix.setObjectName("btnCaliGridFix")
+        self.btnCaliLoadGrid = QtWidgets.QPushButton(self.tab)
+        self.btnCaliLoadGrid.setGeometry(QtCore.QRect(20, 590, 171, 61))
+        self.btnCaliLoadGrid.setStyleSheet("color: #fff;\n"
+"background-color: #337ab7;\n"
+"border-color: #2e6da4;\n"
+"background-image: none;\n"
+"border: 1px solid transparent;\n"
+"border-radius: 4px;")
+        self.btnCaliLoadGrid.setObjectName("btnCaliLoadGrid")
+        self.btnCaliSaveGrid = QtWidgets.QPushButton(self.tab)
+        self.btnCaliSaveGrid.setGeometry(QtCore.QRect(200, 590, 171, 61))
+        self.btnCaliSaveGrid.setStyleSheet("color: #fff;\n"
+"background-color: #337ab7;\n"
+"border-color: #2e6da4;\n"
+"background-image: none;\n"
+"border: 1px solid transparent;\n"
+"border-radius: 4px;")
+        self.btnCaliSaveGrid.setObjectName("btnCaliSaveGrid")
+        self.textCaliCamera = QtWidgets.QTextEdit(self.tab)
+        self.textCaliCamera.setEnabled(True)
+        self.textCaliCamera.setGeometry(QtCore.QRect(770, 70, 351, 211))
+        font = QtGui.QFont()
+        font.setFamily("Arial")
+        font.setPointSize(12)
+        self.textCaliCamera.setFont(font)
+        self.textCaliCamera.setReadOnly(True)
+        self.textCaliCamera.setPlaceholderText("")
+        self.textCaliCamera.setObjectName("textCaliCamera")
         self.tabWidget.addTab(self.tab, "")
         self.tabMain = QtWidgets.QWidget()
         self.tabMain.setObjectName("tabMain")
@@ -192,6 +220,15 @@ class Ui_MainWindow(object):
         self.checkBoxCorrectTipTilt = QtWidgets.QCheckBox(self.tabMain)
         self.checkBoxCorrectTipTilt.setGeometry(QtCore.QRect(380, 630, 141, 21))
         self.checkBoxCorrectTipTilt.setObjectName("checkBoxCorrectTipTilt")
+        self.btnSave_3 = QtWidgets.QPushButton(self.tabMain)
+        self.btnSave_3.setGeometry(QtCore.QRect(950, 620, 171, 61))
+        self.btnSave_3.setStyleSheet("color: #fff;\n"
+"background-color: #337ab7;\n"
+"border-color: #2e6da4;\n"
+"background-image: none;\n"
+"border: 1px solid transparent;\n"
+"border-radius: 4px;")
+        self.btnSave_3.setObjectName("btnSave_3")
         self.tabWidget.addTab(self.tabMain, "")
         self.tabCalibration = QtWidgets.QWidget()
         self.tabCalibration.setObjectName("tabCalibration")
@@ -264,6 +301,8 @@ class Ui_MainWindow(object):
         self.btnCaliLeft.setText(_translate("MainWindow", "<"))
         self.btnCaliDown.setText(_translate("MainWindow", "v"))
         self.btnCaliGridFix.setText(_translate("MainWindow", "Fix my Grid"))
+        self.btnCaliLoadGrid.setText(_translate("MainWindow", "Load Grid"))
+        self.btnCaliSaveGrid.setText(_translate("MainWindow", "Save Grid"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab), _translate("MainWindow", "Camera"))
         self.btnTakeImage.setText(_translate("MainWindow", "Insert Taken Image"))
         self.btnShow.setText(_translate("MainWindow", "Reconstruct Wavefront"))
@@ -274,6 +313,7 @@ class Ui_MainWindow(object):
         self.btnFindSpots.setText(_translate("MainWindow", "Find Spots"))
         self.checkBoxAutomatic.setText(_translate("MainWindow", "Fit 2D Gaussian (slow!)"))
         self.checkBoxCorrectTipTilt.setText(_translate("MainWindow", "Auto-Correct Tip Tilt"))
+        self.btnSave_3.setText(_translate("MainWindow", "Wavefront Info"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tabMain), _translate("MainWindow", "Fit Zernike"))
         self.btnPlotZernike.setText(_translate("MainWindow", "Plot Zernike"))
         self.label.setText(_translate("MainWindow", "Number of Foci"))

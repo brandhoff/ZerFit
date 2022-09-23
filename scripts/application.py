@@ -842,29 +842,49 @@ class Window(QMainWindow, Ui_MainWindow):
         """
          
         img = image
-        img[img < 0.1*np.max(image)] = 0
-        img = np.matrix.round(img)
+        #img[img < 0.1*np.max(image)] = 0
+        #img = np.matrix.round(img)
         
         x1 = np.linspace(lowerleft[0], lowerleft[0]+len(image[:,0]), len(image[:,0]))
         y1 = np.linspace(lowerleft[1], lowerleft[1]+len(image[0,:]), len(image[0,:]))
         x, y = np.meshgrid(x1, y1)
-
         
+        
+        
+        maxz = np.amax(img)
+        minz = np.amin(img)
+        maxx = lowerleft[0]+len(image[:,0])
+        minx = lowerleft[0]
+        
+        maxy = lowerleft[1]+len(image[0,:])
+        miny = lowerleft[1]
+        
+        
+        height = (maxz - minz)
+        sigmax = (maxx-minx)/6.0
+        sigmay = (maxy-miny)/6.0
+        amp = height*sigmax*sigmay
+        
+        #amp = ampl
+        #if ampl > 0:
+            
+        if sigma > 0:
+            sigmax = sigma
         fit_model = Gaussian2dModel(prefix='peak_')
-        params = fit_model.guess(img, x.flatten(), y.flatten())
+        params = Parameters()
        
       
         
         params.add_many(
-            #('peak_'+'amplitude', np.max(img)*2, True, 0, np.max(img)*3),
-            ('peak_'+'centerx', x0, True, x0-0.05*y0, x0+0.05*x0),
-            ('peak_'+'centery', y0, True, y0-0.05*y0, y0+0.05*y0))
-            #('peak_'+'sigmax', 14.49049, True, 0, 15))
-       # params.add('peak_sigmay', expr='peak_sigmax')
-       # if sigma > 0: 
-       #     params.add('peak_sigmax', sigma, True, min = sigma - 0.1*sigma, max = sigma+ 0.1*sigma)
-       # if ampl >0:
-       #     params.add('peak_amplitude', ampl, True, ampl- 0.1*ampl,  np.max(img))
+            ('peak_'+'amplitude', amp, True, 0, amp*1.5),
+            ('peak_'+'centerx', x0, True, x0-0.005*x0, x0+0.005*x0),
+            ('peak_'+'centery', y0, True, y0-0.005*y0, y0+0.005*y0),
+            ('peak_'+'sigmax', sigmax, True, 0, sigmax*1.5))
+        params.add('peak_sigmay', expr='peak_sigmax')
+        if sigma > 0: 
+            params.add('peak_sigmax', sigma, True, min = sigma - 0.05*sigma, max = sigma+ 0.05*sigma)
+        #if ampl >0:
+           # params.add('peak_amplitude', ampl, True, ampl- 0.05*ampl,  ampl+ 0.05*ampl)
 
 
         result = fit_model.fit(img, params, x=x, y=y)

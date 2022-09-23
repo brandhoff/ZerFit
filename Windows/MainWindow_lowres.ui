@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1137</width>
-    <height>746</height>
+    <height>756</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -23,7 +23,7 @@
       <x>0</x>
       <y>0</y>
       <width>1131</width>
-      <height>681</height>
+      <height>711</height>
      </rect>
     </property>
     <property name="currentIndex">
@@ -89,7 +89,7 @@ border-radius: 4px;</string>
       <property name="geometry">
        <rect>
         <x>20</x>
-        <y>530</y>
+        <y>520</y>
         <width>171</width>
         <height>61</height>
        </rect>
@@ -125,8 +125,8 @@ border-radius: 4px;</string>
      <widget class="QPushButton" name="btnCaliRadius">
       <property name="geometry">
        <rect>
-        <x>580</x>
-        <y>560</y>
+        <x>530</x>
+        <y>590</y>
         <width>171</width>
         <height>61</height>
        </rect>
@@ -230,8 +230,8 @@ border-radius: 4px;</string>
      <widget class="QPushButton" name="btnCaliGridFix">
       <property name="geometry">
        <rect>
-        <x>760</x>
-        <y>560</y>
+        <x>720</x>
+        <y>590</y>
         <width>171</width>
         <height>61</height>
        </rect>
@@ -246,6 +246,73 @@ border-radius: 4px;</string>
       </property>
       <property name="text">
        <string>Fix my Grid</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="btnCaliLoadGrid">
+      <property name="geometry">
+       <rect>
+        <x>20</x>
+        <y>590</y>
+        <width>171</width>
+        <height>61</height>
+       </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">color: #fff;
+background-color: #337ab7;
+border-color: #2e6da4;
+background-image: none;
+border: 1px solid transparent;
+border-radius: 4px;</string>
+      </property>
+      <property name="text">
+       <string>Load Grid</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="btnCaliSaveGrid">
+      <property name="geometry">
+       <rect>
+        <x>200</x>
+        <y>590</y>
+        <width>171</width>
+        <height>61</height>
+       </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">color: #fff;
+background-color: #337ab7;
+border-color: #2e6da4;
+background-image: none;
+border: 1px solid transparent;
+border-radius: 4px;</string>
+      </property>
+      <property name="text">
+       <string>Save Grid</string>
+      </property>
+     </widget>
+     <widget class="QTextEdit" name="textCaliCamera">
+      <property name="enabled">
+       <bool>true</bool>
+      </property>
+      <property name="geometry">
+       <rect>
+        <x>770</x>
+        <y>70</y>
+        <width>351</width>
+        <height>211</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <family>Arial</family>
+        <pointsize>12</pointsize>
+       </font>
+      </property>
+      <property name="readOnly">
+       <bool>true</bool>
+      </property>
+      <property name="placeholderText">
+       <string/>
       </property>
      </widget>
     </widget>
@@ -471,6 +538,27 @@ border-radius: 4px;</string>
       </property>
       <property name="text">
        <string>Auto-Correct Tip Tilt</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="btnSave_3">
+      <property name="geometry">
+       <rect>
+        <x>950</x>
+        <y>620</y>
+        <width>171</width>
+        <height>61</height>
+       </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">color: #fff;
+background-color: #337ab7;
+border-color: #2e6da4;
+background-image: none;
+border: 1px solid transparent;
+border-radius: 4px;</string>
+      </property>
+      <property name="text">
+       <string>Wavefront Info</string>
       </property>
      </widget>
     </widget>
