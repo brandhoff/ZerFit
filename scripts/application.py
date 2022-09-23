@@ -166,7 +166,7 @@ class Window(QMainWindow, Ui_MainWindow):
         self.btnCaliGridFix.clicked.connect(self.fixGrid)
         
         self.btnCaliSaveGrid.clicked.connect(self.saveCreatedGridToFile)
-        
+        self.btnCaliLoadGrid.clicked.connect(self.openCreatedGridFromFile)
         
         #Navigation buttons for ROI
         self.btnCaliUp.clicked.connect(self.clickROIup)
@@ -652,7 +652,7 @@ class Window(QMainWindow, Ui_MainWindow):
     def tellMeAboutFoci(self, img):
         
         #yx = peak_local_max(img, min_distance = 20, exclude_border = 0)
-        yx = peak_local_max(img, min_distance = 20, exclude_border = 0, threshold_rel = 0.5)
+        yx = peak_local_max(img, min_distance = 20, exclude_border = 0, threshold_rel = 0.2)
 
         print("I guessed a grid of size:")
         print(round(np.sqrt(len(yx))))
@@ -745,7 +745,6 @@ class Window(QMainWindow, Ui_MainWindow):
 
 
     def saveCreatedGridToFile(self):
-        print("saving grid")
         ROIcenter = self.Camera.center
         ROIradius = self.Camera.radius
         nFoci = self.nFoci
@@ -753,7 +752,53 @@ class Window(QMainWindow, Ui_MainWindow):
         filename, _ = QFileDialog.getSaveFileName(self, 'Save Grid', 
          'c:\\',"Grid file (*.grid)")
         if filename:
-            print(filename)
+            f = open(filename, "w")
+            f.write(str(ROIcenter[0])+'\n')
+            f.write(str(ROIcenter[1])+'\n')
+            f.write(str(ROIradius)+'\n')
+            f.write(str(nFoci))
+            f.close()
+            
+    def openCreatedGridFromFile(self):
+        ROIcenterX = 0
+        ROICenterY = 0
+        ROIradius = 0
+        nFoci = 0        
+        filename, _ = QFileDialog.getOpenFileName(self, 'Open Grid', 
+         'c:\\',"Grid file (*.grid)")
+        if filename:
+            f = open(filename, 'r')
+            Lines = f.readlines()
+            ROIcenterX = int(Lines[0])
+            ROIcenterY = int(Lines[1])
+            ROIradius = int(Lines[2])
+            nFoci = int(Lines[3])
+            f.close()
+        if nFoci > 0:
+            self.axCali.cla()
+            self.draw()
+            self.Camera.center = (ROIcenterX,ROIcenterY)
+            self.Camera.radius = ROIradius
+            self.nFoci = nFoci
+            self.gridGuess = nFoci
+            cutImg = self.Camera.cutImageToAreaOfInterest(self.deepCopyImg)
+            self.axCali.imshow(cutImg, cmap = self.colormap)
+            self.cutImg = cutImg
+            self.buildGrid(axis = self.axCali)
+            
+            self.image = cutImg
+            self.imageHeight = len(cutImg[0,:])
+            self.imageWidth = len(cutImg[:,0])
+            
+            self.axCali.set_xlim(0, self.imageWidth-1)
+            self.axCali.set_ylim(0,self.imageHeight-1)
+            
+            
+            yx = peak_local_max(cutImg, min_distance = 20, exclude_border = 0, threshold_rel = 0.2)
+            self.fociGuess = yx
+            
+            self.draw()
+            
 #---------------------------------------------------------------------
 #---------------------------------------------------------------------
 #--------------------------ANALYSIS-----------------------------------
