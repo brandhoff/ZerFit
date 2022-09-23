@@ -19,10 +19,13 @@ class Camera:
         self.height = 1024
         self.center = (int(self.width / 2), int(self.height/2))
         self.radius = 50
-    def connectCamera(self):
-        self.IdsCamera.connect()
+        
+    def connectCamera(self, textWidget = None):
+        prettyString = self.IdsCamera.connect()
         if not self.IdsCamera.ok:
             return False
+        if textWidget != None:
+            textWidget.setText(prettyString)
         return True
         
     def disconnectCamera(self):

@@ -165,6 +165,8 @@ class Window(QMainWindow, Ui_MainWindow):
         
         self.btnCaliGridFix.clicked.connect(self.fixGrid)
         
+        self.btnCaliSaveGrid.clicked.connect(self.saveCreatedGridToFile)
+        
         
         #Navigation buttons for ROI
         self.btnCaliUp.clicked.connect(self.clickROIup)
@@ -620,12 +622,13 @@ class Window(QMainWindow, Ui_MainWindow):
             self.draw()
             
     def clickConnect(self):
-        if self.Camera.connectCamera():
+        if self.Camera.connectCamera(textWidget = self.textCaliCamera):
             self.connected = True
 
     def clickDisconnect(self):
         if self.connected:
             self.Camera.disconnectCamera()
+            self.textCaliCamera.setText('')
 
     def takeCaliImage(self):
         if self.connected:
@@ -740,6 +743,17 @@ class Window(QMainWindow, Ui_MainWindow):
             self.tellMeAboutFoci(cutImg)
             self.draw()
 
+
+    def saveCreatedGridToFile(self):
+        print("saving grid")
+        ROIcenter = self.Camera.center
+        ROIradius = self.Camera.radius
+        nFoci = self.nFoci
+        
+        filename, _ = QFileDialog.getSaveFileName(self, 'Save Grid', 
+         'c:\\',"Grid file (*.grid)")
+        if filename:
+            print(filename)
 #---------------------------------------------------------------------
 #---------------------------------------------------------------------
 #--------------------------ANALYSIS-----------------------------------

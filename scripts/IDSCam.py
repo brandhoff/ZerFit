@@ -76,10 +76,11 @@ class IdsCamera:
 
     def connect(self):
         self.error_str = ''
-
+        prettyString = ''
         # Starts the driver and establishes the connection to the camera
         rc = ueye.is_InitCamera(self.hCam, None)
         print(rc)
+        #prettyString += rc
         if rc != ueye.IS_SUCCESS:
             return self._error("is_InitCamera ERROR")
 
@@ -133,7 +134,12 @@ class IdsCamera:
         print("\tnBitsPerPixel: \t\t", self.nBitsPerPixel)
         print("\tbytes_per_pixel: \t\t", self.bytes_per_pixel)
         print()
+        prettyString += ("\tm_nColorMode: \t\t" + str(self.m_nColorMode)+'\n')
+        prettyString += ("\tnBitsPerPixel: \t\t" + str(self.nBitsPerPixel)+'\n')
+        prettyString += ("\tbytes_per_pixel: \t\t" + str(self.bytes_per_pixel)+'\n')
 
+        
+        
         # Can be used to set the size and position of an "area of interest"(AOI) within an image
         rc = ueye.is_AOI(self.hCam, ueye.IS_AOI_IMAGE_GET_AOI, self.rectAOI, ueye.sizeof(self.rectAOI))
         if rc != ueye.IS_SUCCESS:
@@ -148,6 +154,9 @@ class IdsCamera:
         print("Camera serial no.:\t", self.cInfo.SerNo.decode('utf-8'))
         print("Camera image size:\t", str(self.size))
         print()
+        prettyString += ("Camera model:\t\t" + str(self.sInfo.strSensorName.decode('utf-8'))+'\n')
+        prettyString += ("Camera serial no.:\t" + str(self.cInfo.SerNo.decode('utf-8'))+'\n')
+        prettyString += ("Camera image size:\t" + str(self.size)+'\n')
 
         # Allocates an image memory for an image having its dimensions defined by width and height
         # and its color depth defined by nBitsPerPixel
@@ -176,8 +185,9 @@ class IdsCamera:
             return self._error("is_InquireImageMem ERROR")
         else:
             print("IDS camera: connection ok")
+            prettyString+="IDS camera: connection ok"
             self.ok = True
-
+        return prettyString
     def grab_image(self):
         if not self.ok:
             print("nicht ok")
