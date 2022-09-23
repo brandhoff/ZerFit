@@ -137,6 +137,10 @@ class Ui_MainWindow(object):
         self.textCaliCamera.setReadOnly(True)
         self.textCaliCamera.setPlaceholderText("")
         self.textCaliCamera.setObjectName("textCaliCamera")
+        self.checkCaliTrack = QtWidgets.QCheckBox(self.tab)
+        self.checkCaliTrack.setGeometry(QtCore.QRect(532, 660, 110, 17))
+        self.checkCaliTrack.setChecked(True)
+        self.checkCaliTrack.setObjectName("checkCaliTrack")
         self.tabWidget.addTab(self.tab, "")
         self.tabMain = QtWidgets.QWidget()
         self.tabMain.setObjectName("tabMain")
@@ -229,6 +233,20 @@ class Ui_MainWindow(object):
 "border: 1px solid transparent;\n"
 "border-radius: 4px;")
         self.btnSave_3.setObjectName("btnSave_3")
+        self.progressBar = QtWidgets.QProgressBar(self.tabMain)
+        self.progressBar.setGeometry(QtCore.QRect(10, 650, 911, 23))
+        self.progressBar.setStyleSheet("QProgressBar{\n"
+"color: #fff;\n"
+"border-color: #2e6da4;\n"
+"background-image: none;\n"
+"}\n"
+"\n"
+"QProgressBar::chunk {\n"
+"     background-color:     qlineargradient(spread:pad, x1:0, y1:0.0454545, x2:0.949, y2:0.459864, stop:0 rgba(51, 122, 183, 255), stop:0.329545 rgba(41, 150, 183, 255), stop:0.715909 rgba(67, 158, 183, 255), stop:0.954545 rgba(90, 255, 255, 255));\n"
+"\n"
+" }")
+        self.progressBar.setProperty("value", 0)
+        self.progressBar.setObjectName("progressBar")
         self.tabWidget.addTab(self.tabMain, "")
         self.tabCalibration = QtWidgets.QWidget()
         self.tabCalibration.setObjectName("tabCalibration")
@@ -303,6 +321,7 @@ class Ui_MainWindow(object):
         self.btnCaliGridFix.setText(_translate("MainWindow", "Fix my Grid"))
         self.btnCaliLoadGrid.setText(_translate("MainWindow", "Load Grid"))
         self.btnCaliSaveGrid.setText(_translate("MainWindow", "Save Grid"))
+        self.checkCaliTrack.setText(_translate("MainWindow", "Track Spots"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab), _translate("MainWindow", "Camera"))
         self.btnTakeImage.setText(_translate("MainWindow", "Insert Taken Image"))
         self.btnShow.setText(_translate("MainWindow", "Reconstruct Wavefront"))

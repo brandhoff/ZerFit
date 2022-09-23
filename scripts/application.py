@@ -123,6 +123,9 @@ class Window(QMainWindow, Ui_MainWindow):
         self.isConnected = False
         self.caliImg = None
         self.sliderCaliRadius.setProperty("maximum", 500)
+        self.progressBar.setMinimum(0)
+        
+        
 
     def connectSignalsSlots(self):
         """
@@ -395,7 +398,11 @@ class Window(QMainWindow, Ui_MainWindow):
         self.relativeShifts = []
         lastSigma = 0
         lastAmpl = 0
-        for cell in self.grid:
+        self.progressBar.setValue(0)
+        self.progressBar.setMaximum(len(self.grid))
+        
+        for index, cell in enumerate(self.grid):
+            self.progressBar.setValue(index)
             img = self.image
             lowerleft = cell.relToAb((-1,-1)) #unten links
             upperright = cell.relToAb((1,1))#oben rechts
@@ -429,7 +436,7 @@ class Window(QMainWindow, Ui_MainWindow):
 
             lastSigma = result.params['peak_sigmax'].value
             lastAmpl = result.params['peak_amplitude'].value
-            
+            """
             print("-------------")
             print("sigma:")
             print(lastSigma)
@@ -438,14 +445,14 @@ class Window(QMainWindow, Ui_MainWindow):
             print("ampl")
             print(lastAmpl)
             print("-------------")
-            
+            """
             (relItemX, relItemY) = cell.abToRel((px,py))
             self.relativeShifts.append((relItemX, relItemY))
             self.ax1.contour(x, y, result.best_fit,  colors='black')
             #self.ax1.contour(x, y, result.best_fit,[0.5,1,1.5,2],  colors='black')
 
             self.draw()
-
+        self.progressBar.setValue(0)
 
 
 
@@ -691,7 +698,8 @@ class Window(QMainWindow, Ui_MainWindow):
         cutImg = self.Camera.cutImageToAreaOfInterest(self.deepCopyImg)
         self.axCali.imshow(cutImg, cmap = self.colormap)
         self.cutImg = cutImg
-        self.tellMeAboutFoci(cutImg)
+        if self.checkCaliTrack.isChecked():
+                self.tellMeAboutFoci(cutImg)
         self.draw()
 
     def clickROIdown(self):
@@ -703,7 +711,8 @@ class Window(QMainWindow, Ui_MainWindow):
         cutImg = self.Camera.cutImageToAreaOfInterest(self.deepCopyImg)
         self.axCali.imshow(cutImg, cmap = self.colormap)
         self.cutImg = cutImg
-        self.tellMeAboutFoci(cutImg)
+        if self.checkCaliTrack.isChecked():
+                self.tellMeAboutFoci(cutImg)
         self.draw()   
         
         
@@ -716,7 +725,8 @@ class Window(QMainWindow, Ui_MainWindow):
         cutImg = self.Camera.cutImageToAreaOfInterest(self.deepCopyImg)
         self.axCali.imshow(cutImg, cmap = self.colormap)
         self.cutImg = cutImg
-        self.tellMeAboutFoci(cutImg)
+        if self.checkCaliTrack.isChecked():
+                self.tellMeAboutFoci(cutImg)
         self.draw()
 
 
@@ -729,7 +739,8 @@ class Window(QMainWindow, Ui_MainWindow):
         cutImg = self.Camera.cutImageToAreaOfInterest(self.deepCopyImg)
         self.axCali.imshow(cutImg, cmap = self.colormap)
         self.cutImg = cutImg
-        self.tellMeAboutFoci(cutImg)
+        if self.checkCaliTrack.isChecked():
+                self.tellMeAboutFoci(cutImg)
         self.draw()
 
     def RadiusChanged(self):
@@ -740,7 +751,8 @@ class Window(QMainWindow, Ui_MainWindow):
             cutImg = self.Camera.cutImageToAreaOfInterest(self.deepCopyImg)
             self.axCali.imshow(cutImg, cmap = self.colormap)
             self.cutImg = cutImg
-            self.tellMeAboutFoci(cutImg)
+            if self.checkCaliTrack.isChecked():
+                self.tellMeAboutFoci(cutImg)
             self.draw()
 
 

@@ -315,6 +315,22 @@ border-radius: 4px;</string>
        <string/>
       </property>
      </widget>
+     <widget class="QCheckBox" name="checkCaliTrack">
+      <property name="geometry">
+       <rect>
+        <x>532</x>
+        <y>660</y>
+        <width>110</width>
+        <height>17</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Track Spots</string>
+      </property>
+      <property name="checked">
+       <bool>true</bool>
+      </property>
+     </widget>
     </widget>
     <widget class="QWidget" name="tabMain">
      <attribute name="title">
@@ -559,6 +575,31 @@ border-radius: 4px;</string>
       </property>
       <property name="text">
        <string>Wavefront Info</string>
+      </property>
+     </widget>
+     <widget class="QProgressBar" name="progressBar">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>650</y>
+        <width>911</width>
+        <height>23</height>
+       </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">QProgressBar{
+color: #fff;
+border-color: #2e6da4;
+background-image: none;
+}
+
+QProgressBar::chunk {
+     background-color: 	qlineargradient(spread:pad, x1:0, y1:0.0454545, x2:0.949, y2:0.459864, stop:0 rgba(51, 122, 183, 255), stop:0.329545 rgba(41, 150, 183, 255), stop:0.715909 rgba(67, 158, 183, 255), stop:0.954545 rgba(90, 255, 255, 255));
+
+ }</string>
+      </property>
+      <property name="value">
+       <number>0</number>
       </property>
      </widget>
     </widget>
