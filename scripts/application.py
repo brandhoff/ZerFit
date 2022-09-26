@@ -140,7 +140,7 @@ class Window(QMainWindow, Ui_MainWindow):
         self.sliderAnalyse.valueChanged.connect(self.updateAnalyseView)
 
         
-        self.btnCreateGrid.clicked.connect(self.buildGrid)
+        self.btnCreateGrid.clicked.connect(self.clickShowGrid)
         
         
         #self.btnFindSpots.clicked.connect(self.findSpotInGrid_singleCell)
@@ -279,8 +279,9 @@ class Window(QMainWindow, Ui_MainWindow):
 
 
 
-
-
+    def clickShowGrid(self):
+        self.drawGrid(axis = self.ax1)
+        self.draw()
 
     def buildGrid(self, axis = None):
         """
@@ -291,8 +292,6 @@ class Window(QMainWindow, Ui_MainWindow):
         None.
 
         """
-        print(self.nFoci)
-
         self.buildAnalyticGrid(self.image, self.nFoci)
         self.drawGrid(axis = axis)
         self.draw()
@@ -329,10 +328,6 @@ class Window(QMainWindow, Ui_MainWindow):
                 if cell.isInside((item[1],item[0])):
                     x0 = item[1]
                     y0 = item[0]
-                    #print("jipp inside:")
-                    
-                   # print((x0,y0))
-                   # print("--------")
                     self.ax1.plot(x0, y0, 'x', color='green')
 
                     globalGuess.remove(item)
@@ -436,16 +431,7 @@ class Window(QMainWindow, Ui_MainWindow):
 
             lastSigma = result.params['peak_sigmax'].value
             lastAmpl = result.params['peak_amplitude'].value
-            """
-            print("-------------")
-            print("sigma:")
-            print(lastSigma)
-            print("-------------")
 
-            print("ampl")
-            print(lastAmpl)
-            print("-------------")
-            """
             (relItemX, relItemY) = cell.abToRel((px,py))
             self.relativeShifts.append((relItemX, relItemY))
             self.ax1.contour(x, y, result.best_fit,  colors='black')
@@ -679,8 +665,52 @@ class Window(QMainWindow, Ui_MainWindow):
         self.axCali.set_ylim(0,self.imageHeight-1)
 
     def fixGrid(self):
-        print("yo du denkst doch nicht dass das eine gut idee ist oder ;)")
+        #print("yo du denkst doch nicht dass das eine gut idee ist oder ;)")
+        cellZahl = self.nFoci
+        unsorted_fociList = self.fociGuess
+        fociList = []
+        #sort the foci from lower left upwards and then right
+        globalGuess = unsorted_fociList.tolist()
+        for cell in self.grid:
+            for item in globalGuess:
+                if cell.isInside((item[1],item[0])):
+                    fociList.append(item)
+                    globalGuess.remove(item)
+                    break
+        
+        
+        #Calculate distance d
+        UpperBound = cellZahl - round(np.sqrt(cellZahl))
+        ds = []
+        for i in range(UpperBound):
+            di = ((fociList[i+round(np.sqrt(cellZahl))])[1]-(fociList[i])[1])
+            #self.axCali.plot((fociList[i+round(np.sqrt(cellZahl))])[1], (fociList[i+round(np.sqrt(cellZahl))])[0], 'x', color='pink')
+            #self.axCali.plot((fociList[i])[1], (fociList[i])[0], 'x', color='pink')
 
+            ds.append(di)
+            
+        d= round(np.mean(ds))
+        print("bestimmte distance: ")
+        print(str(d))
+        #Build Grid from known d and n
+        x0 = (fociList[0])[1]-d/2 + self.Camera.center[0] - self.Camera.radius #TODO das muss noch auf das gesamte bild gemappt werden !
+        y0 = (fociList[0])[0]-d/2 + self.Camera.center[1] - self.Camera.radius#TODO das muss noch auf das gesamte bild gemappt werden !
+        self.buildKnownGrid(cellZahl, d, (x0,y0))
+        #fix the camera view so that the grid is inside the image:
+        self.axCali.cla()
+        centerShift = (round(np.sqrt(cellZahl))*d)/2
+        print('center x')
+        print(str(round(x0 + round(centerShift))))
+        print('center y')
+        print(str(round(y0+round(centerShift))))
+        print('Radius')
+        print(str(round((np.sqrt(cellZahl)*d)/2)))
+        self.Camera.center = (round(x0 + round(centerShift)), round(y0+round(centerShift)))
+        self.Camera.radius = round((np.sqrt(cellZahl)*d)/2)    
+        cutImg = self.Camera.cutImageToAreaOfInterest(self.deepCopyImg)
+        self.axCali.imshow(cutImg, cmap = self.colormap)
+        self.cutImg = cutImg
+        self.draw()
 
 
 #---------------------------------------------------------------------
@@ -984,7 +1014,38 @@ class Window(QMainWindow, Ui_MainWindow):
             cell.dotCenter(axis, color = 'red')
             cell.drawRect(axis)
             
+            
+    def buildKnownGrid(self, nFoci, width, pos0):
+        """
+        
 
+        Parameters
+        ----------
+        nFoci : Number of foci
+            DESCRIPTION.
+        width : width of a cell
+            DESCRIPTION.
+        pos0 : lowe left corner
+            DESCRIPTION.
+
+        Returns
+        -------
+        None.
+
+        """
+        x0 = pos0[0]
+        y0 = pos0[1]
+        cellWidth = width
+        cellHeight = cellWidth
+        self.grid = []
+        numPer = round(np.sqrt(nFoci))
+        for xi in range(numPer):
+            for yi in range(numPer):
+                posX = cellWidth/2 + xi * cellWidth
+                posY = cellHeight/2 + yi * cellHeight
+                cell = Grid.Cell((posX,posY),cellWidth, height = cellHeight)
+                self.grid.append(cell)
+        
     def buildAnalyticGrid(self, image, numFoci):
         """
         Builds an equi distant grid containing n cells where n is the 
