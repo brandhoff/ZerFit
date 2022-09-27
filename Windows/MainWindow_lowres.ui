@@ -331,6 +331,31 @@ border-radius: 4px;</string>
        <bool>true</bool>
       </property>
      </widget>
+     <widget class="QDoubleSpinBox" name="spinRelInt">
+      <property name="geometry">
+       <rect>
+        <x>610</x>
+        <y>659</y>
+        <width>81</width>
+        <height>22</height>
+       </rect>
+      </property>
+      <property name="decimals">
+       <number>3</number>
+      </property>
+      <property name="minimum">
+       <double>0.010000000000000</double>
+      </property>
+      <property name="maximum">
+       <double>0.900000000000000</double>
+      </property>
+      <property name="singleStep">
+       <double>0.040000000000000</double>
+      </property>
+      <property name="value">
+       <double>0.500000000000000</double>
+      </property>
+     </widget>
     </widget>
     <widget class="QWidget" name="tabMain">
      <attribute name="title">

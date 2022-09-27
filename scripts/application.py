@@ -329,7 +329,8 @@ class Window(QMainWindow, Ui_MainWindow):
                     x0 = item[1]
                     y0 = item[0]
                     self.ax1.plot(x0, y0, 'x', color='green')
-
+                    cell.hasSpot = True
+                    cell.spot = item
                     globalGuess.remove(item)
                     foundSpot = True
                     break
@@ -339,7 +340,7 @@ class Window(QMainWindow, Ui_MainWindow):
             self.relativeShifts.append((relItemX, relItemY))
         if len(globalGuess) > 0:
             for item in globalGuess:
-                self.ax1.plot(item[0], item[1], 'x', color='red')
+                self.ax1.plot(item[1], item[0], 'x', color='red')
             msg = QMessageBox()
             msg.setIcon(QMessageBox.Critical)
             msg.setText("Too many Spots Found")
@@ -412,6 +413,8 @@ class Window(QMainWindow, Ui_MainWindow):
                 if cell.isInside((item[1],item[0])):
                     x0 = item[1]
                     y0 = item[0]
+                    cell.hasSpot = True
+                    cell.spot = item
                     break
             #x0-lowerleft[1]
             #y0-lowerleft[0]
@@ -645,7 +648,7 @@ class Window(QMainWindow, Ui_MainWindow):
     def tellMeAboutFoci(self, img):
         
         #yx = peak_local_max(img, min_distance = 20, exclude_border = 0)
-        yx = peak_local_max(img, min_distance = 20, exclude_border = 0, threshold_rel = 0.2)
+        yx = peak_local_max(img, min_distance = 20, exclude_border = 0, threshold_rel = float(self.spinRelInt.value()))
 
         print("I guessed a grid of size:")
         print(round(np.sqrt(len(yx))))
@@ -665,51 +668,127 @@ class Window(QMainWindow, Ui_MainWindow):
         self.axCali.set_ylim(0,self.imageHeight-1)
 
     def fixGrid(self):
-        #print("yo du denkst doch nicht dass das eine gut idee ist oder ;)")
+        """
+        This fixes a given grid for the number of spots identified. this is accieved using the mean distance
+        between each spot in a givn cell.
+        for this all the spots are computed and associated with a cell.
+        Afterwards the image will be streched in a way that each spot lies in the center of a grid cell.
+        Please note that for this the correct amount of spots in the image is needed!
+
+        Returns
+        -------
+        None.
+
+        """
+        
+        
+        """
+        if self.checkCaliCircular.isChecked():
+
+
+
+            unsorted_fociList = self.fociGuess
+            fociList = []
+            globalGuess = unsorted_fociList.tolist()
+            for cell in self.grid:
+                for item in globalGuess:
+                    if cell.isInside((item[1],item[0])):
+                        fociList.append(item)
+                        globalGuess.remove(item)
+                        cell.hasSpot = True
+                        cell.spot = item
+            tempGrid = []            
+            for i, cell in enumerate(self.grid):
+                if cell.hasSpot:
+                    tempGrid.append(cell)
+            self.grid = tempGrid
+
+            print('lengh')
+            print(len(self.grid))
+            self.axCali.cla()
+            self.drawGrid(axis = self.axCali)
+            self.axCali.imshow(self.cutImg, cmap = self.colormap)
+            self.axCali.set_xlim(0, self.imageWidth-1)
+            self.axCali.set_ylim(0,self.imageHeight-1)
+            self.draw()
+                
+                
+                
+                
+                
+                
+                
+        else:
+        """
         cellZahl = self.nFoci
         unsorted_fociList = self.fociGuess
         fociList = []
         #sort the foci from lower left upwards and then right
         globalGuess = unsorted_fociList.tolist()
+        missingSpot = False
         for cell in self.grid:
+            flagHasSpot = False
             for item in globalGuess:
                 if cell.isInside((item[1],item[0])):
                     fociList.append(item)
                     globalGuess.remove(item)
+                    flagHasSpot = True
+                    cell.hasSpot = True
+                    cell.spot = item
                     break
-        
-        
-        #Calculate distance d
-        UpperBound = cellZahl - round(np.sqrt(cellZahl))
-        ds = []
-        for i in range(UpperBound):
-            di = ((fociList[i+round(np.sqrt(cellZahl))])[1]-(fociList[i])[1])
-            #self.axCali.plot((fociList[i+round(np.sqrt(cellZahl))])[1], (fociList[i+round(np.sqrt(cellZahl))])[0], 'x', color='pink')
-            #self.axCali.plot((fociList[i])[1], (fociList[i])[0], 'x', color='pink')
-
-            ds.append(di)
-            
-        d= round(np.mean(ds))
-        print("bestimmte distance: ")
-        print(str(d))
-        #Build Grid from known d and n
-        x0 = (fociList[0])[1]-d/2 + self.Camera.center[0] - self.Camera.radius #TODO das muss noch auf das gesamte bild gemappt werden !
-        y0 = (fociList[0])[0]-d/2 + self.Camera.center[1] - self.Camera.radius#TODO das muss noch auf das gesamte bild gemappt werden !
-        self.buildKnownGrid(cellZahl, d, (x0,y0))
-        #fix the camera view so that the grid is inside the image:
-        self.axCali.cla()
-        centerShift = (round(np.sqrt(cellZahl))*d)/2
-        print('center x')
-        print(str(round(x0 + round(centerShift))))
-        print('center y')
-        print(str(round(y0+round(centerShift))))
-        print('Radius')
-        print(str(round((np.sqrt(cellZahl)*d)/2)))
-        self.Camera.center = (round(x0 + round(centerShift)), round(y0+round(centerShift)))
-        self.Camera.radius = round((np.sqrt(cellZahl)*d)/2)    
+            if not flagHasSpot:
+                missingSpot = True
+        #if there are cells without spots we have a small problem
+        #we then have to use a different method to compute d
+        #So instead we cycle thru all the cells and check if both have a spot
+        if missingSpot:
+            print("oh no a cell does not have a spot yikes")
+            ds = []
+            UpperBound = len(self.grid) - round(np.sqrt(len(self.grid)))
+            for i in range(UpperBound):
+                ShiftRight = i + round(np.sqrt(len(self.grid)))
+                if self.grid[i].hasSpot and self.grid[ShiftRight].hasSpot:
+                    ds.append(self.grid[ShiftRight].spot[1] - self.grid[i].spot[1])
+            d = round(np.mean(ds))
+            print('calculated d')
+            print(str(d))
+            x0 = self.grid[0].x0-d/2 + self.Camera.center[0] - self.Camera.radius 
+            y0 = self.grid[0].y0-d/2 + self.Camera.center[1] - self.Camera.radius
+            self.buildKnownGrid(len(self.grid), d, (x0,y0))
+            self.axCali.cla()
+            centerShift = (round(np.sqrt(len(self.grid)))*d)/2
+            self.Camera.center = (round(x0 + round(centerShift)), round(y0+round(centerShift)))
+            self.Camera.radius = round((np.sqrt(len(self.grid))*d)/2)    
+        else:    
+            #Calculate distance d
+            UpperBound = cellZahl - round(np.sqrt(cellZahl))
+            ds = []
+            for i in range(UpperBound):
+                di = ((fociList[i+round(np.sqrt(cellZahl))])[1]-(fociList[i])[1])
+                ds.append(di)
+                
+            d= round(np.mean(ds))
+            #print("bestimmte distance: ")
+            #print(str(d))
+            #Build Grid from known d and n
+            x0 = (fociList[0])[1]-d/2 + self.Camera.center[0] - self.Camera.radius 
+            y0 = (fociList[0])[0]-d/2 + self.Camera.center[1] - self.Camera.radius
+            self.buildKnownGrid(cellZahl, d, (x0,y0))
+            #fix the camera view so that the grid is inside the image:
+            self.axCali.cla()
+            centerShift = (round(np.sqrt(cellZahl))*d)/2
+            #print('center x')
+            #print(str(round(x0 + round(centerShift))))
+            #print('center y')
+            #print(str(round(y0+round(centerShift))))
+            #print('Radius')
+            #print(str(round((np.sqrt(cellZahl)*d)/2)))
+            self.Camera.center = (round(x0 + round(centerShift)), round(y0+round(centerShift)))
+            self.Camera.radius = round((np.sqrt(cellZahl)*d)/2)    
         cutImg = self.Camera.cutImageToAreaOfInterest(self.deepCopyImg)
         self.axCali.imshow(cutImg, cmap = self.colormap)
         self.cutImg = cutImg
+        self.tellMeAboutFoci(cutImg)
         self.draw()
 
 

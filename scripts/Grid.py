@@ -36,9 +36,14 @@ class Cell:
 
         """
         self.center = center
+        
         self.x0 = center[0]
         self.y0 = center[1]
         self.width = width
+        
+        self.hasSpot = False
+        self.focus = []
+        
         if height == 0:
             self.height = width
         else:
