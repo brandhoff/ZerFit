@@ -49,6 +49,7 @@ from PyQt5 import QtGui
 from PyQt5.QtCore import QEvent
 import zernike
 import fast_zernike
+import CoeffDialog
 from lmfit.lineshapes import gaussian2d, lorentzian
 # Ensure using PyQt5 backend
 matplotlib.use('QT5Agg')
@@ -134,6 +135,10 @@ class Window(QMainWindow, Ui_MainWindow):
         self.btnTakeImage.clicked.connect(self.TestImageProcessing)
         self.btnShow.clicked.connect(self.reconstructWavefront)
         self.btnSavePDF.clicked.connect(self.save)
+        
+        
+        self.btnSave_3.clicked.connect(self.clickedWavInfo)
+        
         
         #slider
         self.horizontalSlider.valueChanged.connect(self.updateWav)
@@ -279,13 +284,33 @@ class Window(QMainWindow, Ui_MainWindow):
 
 
 
+
+    def clickedWavInfo(self):
+        coeff = self.calcCoeff
+        self.Coeffdialog = CoeffDialog.CoeffDialog(coeff)
+        self.Coeffdialog.mainWindowRef = self
+        #self.Coeffdialog.canvas = self.plotSensor_2.canvas
+        self.Coeffdialog.show()
+
+
     def clickShowGrid(self):
+        """
+        This will draw the given grid for the window of the fitting process ax1
+        
+
+        Returns
+        -------
+        None.
+
+        """
         self.drawGrid(axis = self.ax1)
         self.draw()
 
     def buildGrid(self, axis = None):
         """
-        
+        this function will build a grid for the taken and cut img
+        you can provide an axis in which the grid should be drawn default is the
+        axis of the fitting window ax1
 
         Returns
         -------
