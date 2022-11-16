@@ -224,8 +224,7 @@ class Window(QMainWindow, Ui_MainWindow):
         
     def takeImage(self):
         """
-        Fired when the take image button is pressed will take an Image of the sensor
-        and will display it in the left Canvas
+        Empty placeholder
 
         Returns
         -------
@@ -243,8 +242,6 @@ class Window(QMainWindow, Ui_MainWindow):
         None.
 
         """
-        print("reconstructing Wavefront")
-        
         #self.calculateRelativeShifts()
         order = self.spinBox.value()
         
@@ -450,12 +447,6 @@ class Window(QMainWindow, Ui_MainWindow):
             #report = lmfit.fit_report(result.params)
             px = result.params['peak_centerx'].value
             py = result.params['peak_centery'].value
-            #print(lowerleft)
-            
-            #print(x)
-            #print(y)
-            #px = px
-            #py = py
 
             lastSigma = result.params['peak_sigmax'].value
             lastAmpl = result.params['peak_amplitude'].value
@@ -705,46 +696,6 @@ class Window(QMainWindow, Ui_MainWindow):
         None.
 
         """
-        
-        
-        """
-        if self.checkCaliCircular.isChecked():
-
-
-
-            unsorted_fociList = self.fociGuess
-            fociList = []
-            globalGuess = unsorted_fociList.tolist()
-            for cell in self.grid:
-                for item in globalGuess:
-                    if cell.isInside((item[1],item[0])):
-                        fociList.append(item)
-                        globalGuess.remove(item)
-                        cell.hasSpot = True
-                        cell.spot = item
-            tempGrid = []            
-            for i, cell in enumerate(self.grid):
-                if cell.hasSpot:
-                    tempGrid.append(cell)
-            self.grid = tempGrid
-
-            print('lengh')
-            print(len(self.grid))
-            self.axCali.cla()
-            self.drawGrid(axis = self.axCali)
-            self.axCali.imshow(self.cutImg, cmap = self.colormap)
-            self.axCali.set_xlim(0, self.imageWidth-1)
-            self.axCali.set_ylim(0,self.imageHeight-1)
-            self.draw()
-                
-                
-                
-                
-                
-                
-                
-        else:
-        """
         cellZahl = self.nFoci
         unsorted_fociList = self.fociGuess
         fociList = []
@@ -793,8 +744,6 @@ class Window(QMainWindow, Ui_MainWindow):
                 ds.append(di)
                 
             d= round(np.mean(ds))
-            #print("bestimmte distance: ")
-            #print(str(d))
             #Build Grid from known d and n
             x0 = (fociList[0])[1]-d/2 + self.Camera.center[0] - self.Camera.radius 
             y0 = (fociList[0])[0]-d/2 + self.Camera.center[1] - self.Camera.radius
@@ -802,12 +751,6 @@ class Window(QMainWindow, Ui_MainWindow):
             #fix the camera view so that the grid is inside the image:
             self.axCali.cla()
             centerShift = (round(np.sqrt(cellZahl))*d)/2
-            #print('center x')
-            #print(str(round(x0 + round(centerShift))))
-            #print('center y')
-            #print(str(round(y0+round(centerShift))))
-            #print('Radius')
-            #print(str(round((np.sqrt(cellZahl)*d)/2)))
             self.Camera.center = (round(x0 + round(centerShift)), round(y0+round(centerShift)))
             self.Camera.radius = round((np.sqrt(cellZahl)*d)/2)    
         cutImg = self.Camera.cutImageToAreaOfInterest(self.deepCopyImg)
@@ -1047,39 +990,23 @@ class Window(QMainWindow, Ui_MainWindow):
         """
          
         img = image
-        #img[img < 0.1*np.max(image)] = 0
-        #img = np.matrix.round(img)
-        
         x1 = np.linspace(lowerleft[0], lowerleft[0]+len(image[:,0]), len(image[:,0]))
         y1 = np.linspace(lowerleft[1], lowerleft[1]+len(image[0,:]), len(image[0,:]))
         x, y = np.meshgrid(x1, y1)
-        
-        
-        
         maxz = np.amax(img)
         minz = np.amin(img)
         maxx = lowerleft[0]+len(image[:,0])
         minx = lowerleft[0]
-        
         maxy = lowerleft[1]+len(image[0,:])
         miny = lowerleft[1]
-        
-        
         height = (maxz - minz)
         sigmax = (maxx-minx)/6.0
         sigmay = (maxy-miny)/6.0
         amp = height*sigmax*sigmay
-        
-        #amp = ampl
-        #if ampl > 0:
-            
         if sigma > 0:
             sigmax = sigma
         fit_model = Gaussian2dModel(prefix='peak_')
         params = Parameters()
-       
-      
-        
         params.add_many(
             ('peak_'+'amplitude', amp, True, 0, amp*1.5),
             ('peak_'+'centerx', x0, True, x0-0.005*x0, x0+0.005*x0),
@@ -1088,10 +1015,6 @@ class Window(QMainWindow, Ui_MainWindow):
         params.add('peak_sigmay', expr='peak_sigmax')
         if sigma > 0: 
             params.add('peak_sigmax', sigma, True, min = sigma - 0.05*sigma, max = sigma+ 0.05*sigma)
-        #if ampl >0:
-           # params.add('peak_amplitude', ampl, True, ampl- 0.05*ampl,  ampl+ 0.05*ampl)
-
-
         result = fit_model.fit(img, params, x=x, y=y)
         mesh = (x,y)
         return result, mesh
