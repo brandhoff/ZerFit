@@ -236,6 +236,7 @@ class Window(QMainWindow, Ui_MainWindow):
 
     def AntoniaFunction(self):
         print("HAllo")
+        print("test")
 
 
     def reconstructWavefront(self):
