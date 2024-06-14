@@ -233,6 +233,11 @@ class Window(QMainWindow, Ui_MainWindow):
         """
         print("taking Image")
 
+
+    def AntoniaFunction(self):
+        print("HAllo")
+
+
     def reconstructWavefront(self):
         """
         Reconstructs the wavefront and plots it
